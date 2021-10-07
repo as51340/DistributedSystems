@@ -1,0 +1,88 @@
+<project name="RMI" default="run" basedir=".">
+  <description>This is build/run script for the RMI1 assignment. </description>
+
+  <property name="src" location="src"/>
+  <property name="build" location="bin"/>
+  <path id="cp">
+	<pathelement location="${build}"/>
+  </path>
+
+  <!--
+    ********************************************************
+       Please set the following two parameters to point 
+	   to your server's and client's Main-method classes
+	   Example: "staff.BookingClient"
+	            => Package: staff Classname: BookingClient
+	   The third parameter is filename for the final zip.	   
+    ******************************************************** -->
+  <property name="main.client" value="staff.BookingClient" />
+  <property name="main.server" value="" />
+  <property name="zip.filename" value="rmi" />
+  <!--
+    ********************************************************
+       Please DO NOT CHANGE any code below this line.
+	******************************************************** -->
+
+  <target name="init" >
+	<delete dir="${build}" quiet="true"/>
+    <mkdir dir="${build}"/>
+	<delete dir="${dist}" quiet="true"/>
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac includeantruntime="false" srcdir="${src}" destdir="${build}"/>
+  </target>
+  
+  <target name="registry.start">
+	<exec spawn="true" executable="rmiregistry" dir="${build}"/>
+	<sleep milliseconds="5000"/>
+  </target>
+
+  <target name="registry.stop">
+	<exec osfamily="windows" executable="taskkill">
+	  <arg value="/IM"/>
+	  <arg value="rmiregistry.exe"/>
+	  <arg value="/F"/>
+	</exec>
+	<exec osfamily="unix" executable="killall">
+		<arg value="rmiregistry"/>
+	</exec>
+  </target>
+    
+  <target name="run.serveronly">
+	<java fork="true" classname="${main.server}">	
+		<classpath refid="cp" />
+	</java>
+  </target>
+
+  <target name="run.clientonly">
+	<java classname="${main.client}">	
+		<classpath refid="cp" />
+	</java>
+  </target>
+
+  <target name="run.both">
+	<java classname="${main.server}">	
+		<classpath refid="cp" />
+	</java>
+	<java classname="${main.client}">	
+		<classpath refid="cp" />
+	</java>
+  </target>
+  
+  <target name="zip">
+		<delete file="${zip.filename}.zip" quiet="true"/>
+		<zip destfile="${zip.filename}.zip" update="false">
+			<zipfileset dir=".">
+				<include name="*rips"/>
+				<include name="*csv"/>
+				<include name="build.xml" />
+			</zipfileset>
+			<zipfileset dir="src" prefix="src"/>
+		</zip>
+  </target>
+  
+  <target name="run" depends="compile,registry.start,run.both,registry.stop"/>
+  <target name="run-wo-compile" depends="registry.start,run.both,registry.stop" />
+</project>
