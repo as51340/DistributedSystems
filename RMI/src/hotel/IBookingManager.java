@@ -1,5 +1,6 @@
 package hotel;
 
+import java.rmi.Remote;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -9,7 +10,7 @@ import java.util.Set;
  * @author andi
  *
  */
-public interface IBookingManager {
+public interface IBookingManager extends Remote{
 	
 	/**
 	 * @return all rooms in system
@@ -37,6 +38,5 @@ public interface IBookingManager {
 	 * @throws ReservationException
 	 */
 	Set<Integer> getAvailableRooms(LocalDate date) throws ReservationException;
-	
 
 }

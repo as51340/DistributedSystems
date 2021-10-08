@@ -1,6 +1,5 @@
 package hotel;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -25,7 +24,7 @@ public class BookingManager implements IBookingManager{
 	private static BookingManager instance = null;
 	
 	// all rooms in our systems
-	private Room[] rooms;
+	private static Room[] rooms;
 	
 	/**
 	 * Private constructor so it's not intended to be called
@@ -42,12 +41,12 @@ public class BookingManager implements IBookingManager{
 	 * thread exited before us and initialized our instance.
 	 * @return
 	 */
-	public BookingManager getInstance() {
+	public static BookingManager getInstance() {
 		if(instance == null) {
 			synchronized(BookingManager.class) { // this is correct way of synchronizing. Using this would be wrong because this is now null.
 				if(instance == null) {
 					instance = new BookingManager();
-					this.rooms = initializeRooms();
+					rooms = initializeRooms();
 				}
 				return instance;
 			}
@@ -72,7 +71,7 @@ public class BookingManager implements IBookingManager{
 	 * @return
 	 */
 	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
-		for(Room room: this.rooms) {
+		for(Room room: rooms) {
 			if(room.getRoomNumber() != roomNumber) continue; // check if this that room
 			List<BookingDetail> roomBookings = room.getBookings();
 			for(BookingDetail bd: roomBookings) {
@@ -93,7 +92,7 @@ public class BookingManager implements IBookingManager{
 		// We can write this in more efficient way by not using isRoomAvailable because when room is available
 		// then we need to iterate again over our solution. Still better then situation with getAvailableRooms
 		if(isRoomAvailable(bookingDetail.getRoomNumber(), bookingDetail.getDate())) {
-			for(Room room: this.rooms) {
+			for(Room room: rooms) {
 				if(room.getRoomNumber() == bookingDetail.getRoomNumber()) { // this is our room
 					room.getBookings().add(bookingDetail);
 				}
@@ -110,7 +109,7 @@ public class BookingManager implements IBookingManager{
 	 */
 	public Set<Integer> getAvailableRooms(LocalDate date) {
 		Set<Integer> availableRoomsNumber = new TreeSet<Integer>(); // keeps rooms in sorted way
-		for(Room room: this.rooms) { // iterate over every room
+		for(Room room: rooms) { // iterate over every room
 			List<BookingDetail> roomBookings = room.getBookings();
 			boolean roomAvailable = true;
 			for(BookingDetail bd: roomBookings) { // check all their bookings
