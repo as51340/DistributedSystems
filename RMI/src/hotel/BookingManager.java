@@ -21,11 +21,39 @@ import java.util.TreeSet;
  *
  */
 public class BookingManager implements IBookingManager{
-
+	
+	private static BookingManager instance = null;
+	
+	// all rooms in our systems
 	private Room[] rooms;
-
-	public BookingManager() {
-		this.rooms = initializeRooms();
+	
+	/**
+	 * Private constructor so it's not intended to be called
+	 */
+	private BookingManager() {
+		
+	}
+	
+	/**
+	 * Implements double check locking pattern for multithreading access to this instance.
+	 * Problem is if don't synchronize then we can have multiple instance if threads are running completely in parallel.
+	 * We don't want to synchronize whole method because this is too expensive operation for us.
+	 * Instead, we synchronize only if instance is null and do the second check because it is possible that other
+	 * thread exited before us and initialized our instance.
+	 * @return
+	 */
+	public BookingManager getInstance() {
+		if(instance == null) {
+			synchronized(BookingManager.class) { // this is correct way of synchronizing. Using this would be wrong because this is now null.
+				if(instance == null) {
+					instance = new BookingManager();
+					this.rooms = initializeRooms();
+				}
+				return instance;
+			}
+		} else { // if already initialized then return existing instance
+			return instance;
+		}
 	}
 
 	public Set<Integer> getAllRooms() {
