@@ -16,11 +16,10 @@ public class BookingServer {
 
 	public static void main(String[] args) throws ReservationException, NumberFormatException, Exception {
 		
-		if(System.getSecurityManager() != null) {
+		if(System.getSecurityManager() != null) { // try to look more about that
 			System.setSecurityManager(null);
 		}
 
-		
 		IBookingManager bookingManager = BookingManager.getInstance();
 
 		// locate registry

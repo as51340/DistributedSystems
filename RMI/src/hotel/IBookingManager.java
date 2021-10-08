@@ -16,7 +16,7 @@ public interface IBookingManager extends Remote {
 	/**
 	 * @return all rooms in system
 	 */
-	public Set<Integer> getAllRooms() throws ReservationException;
+	public Set<Integer> getAllRooms() throws RemoteException;
 	
 	/**
 	 * Checks if room with {@link roomNumber} is available on specific date
