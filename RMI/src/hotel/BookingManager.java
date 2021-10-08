@@ -19,7 +19,8 @@ import java.util.TreeSet;
  * @author andi
  *
  */
-public class BookingManager implements IBookingManager{
+public class BookingManager implements IBookingManager {
+
 	
 	private static BookingManager instance = null;
 	

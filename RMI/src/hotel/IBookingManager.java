@@ -1,6 +1,7 @@
 package hotel;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -15,7 +16,7 @@ public interface IBookingManager extends Remote{
 	/**
 	 * @return all rooms in system
 	 */
-	Set<Integer> getAllRooms();
+	Set<Integer> getAllRooms() throws RemoteException;
 	
 	/**
 	 * Checks if room with {@link roomNumber} is available on specific date
@@ -23,20 +24,24 @@ public interface IBookingManager extends Remote{
 	 * @param date
 	 * @return
 	 */
-	boolean isRoomAvailable(Integer roomNumber, LocalDate date) throws ReservationException;
+
+	boolean isRoomAvailable(Integer roomNumber, LocalDate date) throws RemoteException;
+
 	
 	/**
 	 * Adds booking for specific room or throws exception if room is not actually available on that date 
 	 * @param bookingDetail
 	 * @throws ReservationException
 	 */
-	void addBooking(BookingDetail bookingDetail) throws ReservationException;
+
+	void addBooking(BookingDetail bookingDetail) throws RemoteException;
+
 	
 	/**
 	 * @param date
 	 * @return all available rooms for {@link date}
 	 * @throws ReservationException
 	 */
-	Set<Integer> getAvailableRooms(LocalDate date) throws ReservationException;
+	Set<Integer> getAvailableRooms(LocalDate date) throws RemoteException;
 
 }
