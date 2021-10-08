@@ -14,7 +14,7 @@ public class BookingClient extends AbstractScriptedSimpleTest{
 	public BookingClient() {
 		try {
 			//Look up the registered remote instance
-			BookingManager bm = BookingManager.getInstance(); // if you need to use it, here no need for it.	
+			BookingManager bm = new BookingManager(); // if you need to use it, here no need for it.	
 		} catch (Exception exp) {
 			exp.printStackTrace();
 		}

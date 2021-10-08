@@ -21,18 +21,15 @@ import java.util.TreeSet;
  *
  */
 public class BookingManager implements IBookingManager {
-
-	
-	private static BookingManager instance = null;
 	
 	// all rooms in our systems
-	private static Room[] rooms;
+	private Room[] rooms;
 	
 	/**
 	 * Private constructor so it's not intended to be called
 	 */
 	public BookingManager() {
-		
+		rooms = initializeRooms();
 	}
 	
 	/**
@@ -43,19 +40,19 @@ public class BookingManager implements IBookingManager {
 	 * thread exited before us and initialized our instance.
 	 * @return
 	 */
-	public static BookingManager getInstance() {
+	/**public static BookingManager getInstance() {
 		if(instance == null) {
 			synchronized(BookingManager.class) { // this is correct way of synchronizing. Using this would be wrong because this is now null.
 				if(instance == null) {
 					instance = new BookingManager();
-					rooms = initializeRooms();
+					
 				}
 				return instance;
 			}
 		} else { // if already initialized then return existing instance
 			return instance;
 		}
-	}
+	}**/
 
 	public Set<Integer> getAllRooms() {
 		Set<Integer> allRooms = new HashSet<Integer>();
