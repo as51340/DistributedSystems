@@ -20,7 +20,7 @@ public class BookingServer {
 			System.setSecurityManager(null);
 		}
 
-		IBookingManager bookingManager = BookingManager.getInstance();
+		IBookingManager bookingManager = new BookingManager();
 
 		// locate registry
 		Registry registry = null;
