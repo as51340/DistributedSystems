@@ -24,14 +24,18 @@ public interface IBookingManager extends Remote{
 	 * @param date
 	 * @return
 	 */
+
 	boolean isRoomAvailable(Integer roomNumber, LocalDate date) throws RemoteException;
+
 	
 	/**
 	 * Adds booking for specific room or throws exception if room is not actually available on that date 
 	 * @param bookingDetail
 	 * @throws ReservationException
 	 */
+
 	void addBooking(BookingDetail bookingDetail) throws RemoteException;
+
 	
 	/**
 	 * @param date

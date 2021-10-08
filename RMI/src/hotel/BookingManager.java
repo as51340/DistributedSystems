@@ -20,6 +20,7 @@ import java.util.TreeSet;
  *
  */
 public class BookingManager implements IBookingManager {
+
 	
 	private static BookingManager instance = null;
 	
