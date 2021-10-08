@@ -1,8 +1,0 @@
-# Report and questions for 1st laboratory exercise.
-
-All of that is not implemented very efficiently because of storing in array. It could be better by utilizing hash map or something similar to it.
-Java concurrency has a lot of things. First thing you can use is synchronized block. This is old school but is quite used because it is easy. So we can for example write synchronized blocks on 
-BookingManager class or even instance if we plan to use singleton.
-Second way you can use is wait, notify, notify all methods.
-Thread safe - some class or object is thread safe when multiple threads can access it no matter how runtime environment in java schedules these threads and without other synchronization or coordination
-on the part of the calling code.

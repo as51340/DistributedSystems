@@ -72,8 +72,8 @@ public class BookingManager implements IBookingManager {
 	 */
 	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
 		for(Room room: rooms) {
+			if(room.getRoomNumber() != roomNumber) continue; // check if this that room
 			synchronized(room) {
-				if(room.getRoomNumber() != roomNumber) continue; // check if this that room
 				List<BookingDetail> roomBookings = room.getBookings();
 				for(BookingDetail bd: roomBookings) {
 					if(bd.getDate().equals(date) == true) {
@@ -94,16 +94,18 @@ public class BookingManager implements IBookingManager {
 	public void addBooking(BookingDetail bookingDetail) throws RemoteException {
 		// We can write this in more efficient way by not using isRoomAvailable because when room is available
 		// then we need to iterate again over our solution. Still better then situation with getAvailableRooms
-		if(isRoomAvailable(bookingDetail.getRoomNumber(), bookingDetail.getDate())) {
-			for(Room room: rooms) {
-				synchronized(room) {
-					if(room.getRoomNumber().equals(bookingDetail.getRoomNumber())) { // this is our room
-						room.getBookings().add(bookingDetail);
-					}	
+		for(Room room: this.rooms) {
+			if(room.getRoomNumber().equals(bookingDetail.getRoomNumber()) == false) continue;
+			synchronized(room) {
+				List<BookingDetail> bookings = room.getBookings();
+				for(BookingDetail bd: bookings) {
+					if(bd.getDate().equals(bookingDetail.getDate())) {
+						throw new RemoteException();					
+					}
 				}
+				room.getBookings().add(bookingDetail);
 			}
-		} else {
-			throw new RemoteException("Room " + bookingDetail.getRoomNumber() + " cannot be booked for " + bookingDetail.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "");
+			break;
 		}
 	}
 	

@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 import hotel.BookingDetail;
@@ -43,8 +44,9 @@ public class BookingClient extends AbstractScriptedSimpleTest{
 	public void addBooking(BookingDetail bookingDetail) throws RemoteException {
 		try {
 			booking.addBooking(bookingDetail);
+			System.out.println("Room " + bookingDetail.getRoomNumber() + " successfully reserved by " + bookingDetail.getGuest() + " for " + bookingDetail.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 		} catch (RemoteException e) {
-			System.out.println(e.getMessage());
+			System.out.println("Room " + bookingDetail.getRoomNumber() + " cannot be reserved from " + bookingDetail.getGuest() + " for " + bookingDetail.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 		}
 	}
 

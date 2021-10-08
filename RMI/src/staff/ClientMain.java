@@ -17,7 +17,8 @@ public class ClientMain {
 
 	public static void main(String[] args) throws Exception {
 		//singleUserTest();
-		multipleUserTest();
+		//multipleUserTest();
+		multipleUserTest2();
 	}
 	
 	
@@ -30,6 +31,53 @@ public class ClientMain {
 		client.run();
 	}
 	
+	private static void multipleUserTest2() throws Exception {
+		BookingClient client1 = new BookingClient();
+		BookingClient client2 = new BookingClient();
+		BookingClient client3 = new BookingClient();
+		BookingClient client4 = new BookingClient();
+		
+		LocalDate today = LocalDate.now();
+		LocalDate tomorrow = today.plusDays(1);
+		LocalDate yesterday = today.minusDays(1);
+		LocalDate nextWeek = today.plusDays(7);
+		
+		new Thread(() -> {
+			try {
+				client1.addBooking(new BookingDetail("Client1", 101, today));
+			} catch(Exception ex) {
+				
+			}
+		}).start();
+		
+		new Thread(() -> {
+			try {
+				client1.addBooking(new BookingDetail("Client1", 101, tomorrow));
+			} catch(Exception ex) {
+				
+			}
+		}).start();
+		
+		new Thread(() -> {
+			try {
+				client1.addBooking(new BookingDetail("Client1", 101, nextWeek));
+			} catch(Exception ex) {
+				
+			}
+		}).start();
+
+
+		new Thread(() -> {
+			try {
+				client2.addBooking(new BookingDetail("Client2", 203, today));
+			} catch(Exception ex) {
+				
+			}
+		}).start();
+		
+		
+	}
+	
 	private static void multipleUserTest() throws Exception {
 		BookingClient client1 = new BookingClient();
 		BookingClient client2 = new BookingClient();
@@ -38,53 +86,26 @@ public class ClientMain {
 		
 		new Thread(() -> {
 			try {
-				System.out.print("***Client1 obtains all rooms ");
-				printRooms(client1.getAllRooms());
-				System.out.print("***Client1 obtains all available rooms ");
-				printRooms(client1.getAvailableRooms(today));
+				printRooms(client1.getAvailableRooms(today), "Client1");
 				// Reservation room 101 
-				System.out.println("***Client1 tries to reserve room 101***");
-				BookingDetail bd1 = new BookingDetail("KU Leuven", 101, today);
-				try {
-					client1.addBooking(bd1);
-				} catch (Exception e) {
-					System.out.println("***Client1 couldn't reserve room 101***");
-				}
-				System.out.print("***Client1 obtains all available rooms ");
-				printRooms(client1.getAvailableRooms(today));
+				BookingDetail bd1 = new BookingDetail("Client1", 101, today);
+				client1.addBooking(bd1);
+				printRooms(client1.getAvailableRooms(today), "Client1");
 				
 				// Reservation room 102 
-				System.out.println("***Client1 tries to reserve room 102***");
-				BookingDetail bd2 = new BookingDetail("KU Leuven", 102, today);
-				try {
-					client1.addBooking(bd2);
-				} catch (Exception e) {
-					System.out.println("***Client1 couldn't reserve room 102***");
-				}
-				System.out.print("***Client1 obtains all available rooms ");
-				printRooms(client1.getAvailableRooms(today));
+				BookingDetail bd2 = new BookingDetail("Client1", 102, today);				
+				client1.addBooking(bd2);
+				printRooms(client1.getAvailableRooms(today), "Client1");
 				
 				// Reservation room 201 
-				System.out.println("***Client1 tries to reserve room 201***");
-				BookingDetail bd3 = new BookingDetail("KU Leuven", 201, today);
-				try {
-					client1.addBooking(bd3);
-				} catch (Exception e) {
-					System.out.println("***Client1 couldn't reserve room 201***");
-				}
-				System.out.print("***Client1 obtains all available rooms ");
-				printRooms(client1.getAvailableRooms(today));
+				BookingDetail bd3 = new BookingDetail("Client1", 201, today);
+				client1.addBooking(bd3);
+				printRooms(client1.getAvailableRooms(today), "Client1");
 				
 				// Reservation room 203 
-				System.out.println("***Client1 tries to reserve room 203***");
-				BookingDetail bd4 = new BookingDetail("KU Leuven", 203, today);
-				try {
-					client1.addBooking(bd4);
-				} catch (Exception e) {
-					System.out.println("***Client1 couldn't reserve room 203***");
-				}
-				System.out.print("***Client1 obtains all available rooms ");
-				printRooms(client1.getAvailableRooms(today));
+				BookingDetail bd4 = new BookingDetail("Client1", 203, today);
+				client1.addBooking(bd4);
+				printRooms(client1.getAvailableRooms(today), "Client1");
 			
 			} catch(Exception ex) {
 				
@@ -93,52 +114,27 @@ public class ClientMain {
 		
 		new Thread(() -> {
 			try {
-				System.out.print("***Client2 obtains all available rooms ");
-				printRooms(client2.getAvailableRooms(today));
+				printRooms(client1.getAvailableRooms(today), "Client2");
 				
 				// Reservation room 101
-				System.out.println("***Client2 tries to reserve room 101 ");
-				BookingDetail bd1 = new BookingDetail("KU Leuven", 101, today);
-				try {
-					client2.addBooking(bd1);
-				} catch (Exception e) {
-					System.out.println("***Client2 couldn't reserve room 101***");
-				}
-				System.out.print("***Client2 obtains all available rooms ");
-				printRooms(client2.getAvailableRooms(today));
+				BookingDetail bd1 = new BookingDetail("Client2", 101, today);
+				client2.addBooking(bd1);
+				printRooms(client1.getAvailableRooms(today), "Client2");
 				
 				// Reservation room 102 
-				System.out.println("***Client2 tries to reserve room 102***");
-				BookingDetail bd2 = new BookingDetail("KU Leuven", 102, today);
-				try {
-					client2.addBooking(bd2);
-				} catch (Exception e) {
-					System.out.println("***Client2 couldn't reserve room 102***");
-				}
-				System.out.print("***Client2 obtains all available rooms ");
-				printRooms(client2.getAvailableRooms(today));
+				BookingDetail bd2 = new BookingDetail("Client2", 102, today);
+				client2.addBooking(bd2);
+				printRooms(client1.getAvailableRooms(today), "Client2");
 				
 				// Reservation room 201 
-				System.out.println("***Client2 tries to reserve room 201***");
-				BookingDetail bd3 = new BookingDetail("KU Leuven", 201, today);
-				try {
-					client2.addBooking(bd3);
-				} catch (Exception e) {
-					System.out.println("***Client2 couldn't reserve room 201***");
-				}
-				System.out.print("***Client2 obtains all available rooms ");
-				printRooms(client2.getAvailableRooms(today));
+				BookingDetail bd3 = new BookingDetail("Client2", 201, today);
+				client2.addBooking(bd3);
+				printRooms(client1.getAvailableRooms(today), "Client2");
 				
 				// Reservation room 203 
-				System.out.println("***Client2 tries to reserve room 203***");
-				BookingDetail bd4 = new BookingDetail("KU Leuven", 203, today);
-				try {
-					client2.addBooking(bd4);
-				} catch (Exception e) {
-					System.out.println("***Client2 couldn't reserve room 203***");
-				}
-				System.out.print("***Client2 obtains all available rooms ");
-				printRooms(client2.getAvailableRooms(today));
+				BookingDetail bd4 = new BookingDetail("Client2", 203, today);
+				client2.addBooking(bd4);
+				printRooms(client1.getAvailableRooms(today), "Client2");
 	
 			} catch(Exception ex) {
 				
@@ -152,11 +148,16 @@ public class ClientMain {
 	 * Print all rooms, actually room numbers.
 	 * @param rooms
 	 */
-	private static void printRooms(Set<Integer> rooms) {
-		for(Integer room: rooms) {
-			System.out.print(room + " ");
+	private static void printRooms(Set<Integer> rooms, String executor) {
+		System.out.print(executor + " obtains rooms: ");
+		if(rooms.isEmpty()) {
+			System.out.print("void");
+		} else {
+			for(Integer room: rooms) {
+				System.out.print(room + " ");
+			}
 		}
-		System.out.print("***");
+		System.out.println();
 		System.out.println();
 	}
 
