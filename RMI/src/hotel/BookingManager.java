@@ -1,5 +1,6 @@
 package hotel;
 
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public class BookingManager implements IBookingManager {
 	/**
 	 * Private constructor so it's not intended to be called
 	 */
-	private BookingManager() {
+	public BookingManager() {
 		
 	}
 	
@@ -87,9 +88,10 @@ public class BookingManager implements IBookingManager {
 	/**
 	 * Adds booking if room is available otherwise throws {@linkplain ReservationException}
 	 * @param bookingDetail
+	 * @throws RemoteException 
 	 * @throws ReservationException 
 	 */
-	public void addBooking(BookingDetail bookingDetail) throws ReservationException {
+	public void addBooking(BookingDetail bookingDetail) throws RemoteException {
 		// We can write this in more efficient way by not using isRoomAvailable because when room is available
 		// then we need to iterate again over our solution. Still better then situation with getAvailableRooms
 		if(isRoomAvailable(bookingDetail.getRoomNumber(), bookingDetail.getDate())) {
@@ -99,7 +101,7 @@ public class BookingManager implements IBookingManager {
 				}
 			}
 		} else {
-			throw new ReservationException("Room " + bookingDetail.getRoomNumber() + " cannot be booked for " + bookingDetail.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "");
+			throw new RemoteException("Room " + bookingDetail.getRoomNumber() + " cannot be booked for " + bookingDetail.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "");
 		}
 	}
 	

@@ -15,7 +15,12 @@ public class BookingServer {
 	private static Logger logger = Logger.getLogger(BookingServer.class.getName());
 
 	public static void main(String[] args) throws ReservationException, NumberFormatException, Exception {
+		
+		if(System.getSecurityManager() != null) {
+			System.setSecurityManager(null);
+		}
 
+		
 		IBookingManager bookingManager = BookingManager.getInstance();
 
 		// locate registry

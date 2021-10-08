@@ -11,12 +11,12 @@ import java.util.Set;
  * @author andi
  *
  */
-public interface IBookingManager extends Remote{
+public interface IBookingManager extends Remote {
 	
 	/**
 	 * @return all rooms in system
 	 */
-	Set<Integer> getAllRooms() throws RemoteException;
+	public Set<Integer> getAllRooms() throws ReservationException;
 	
 	/**
 	 * Checks if room with {@link roomNumber} is available on specific date
@@ -25,7 +25,7 @@ public interface IBookingManager extends Remote{
 	 * @return
 	 */
 
-	boolean isRoomAvailable(Integer roomNumber, LocalDate date) throws RemoteException;
+	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) throws RemoteException;
 
 	
 	/**
@@ -34,7 +34,7 @@ public interface IBookingManager extends Remote{
 	 * @throws ReservationException
 	 */
 
-	void addBooking(BookingDetail bookingDetail) throws RemoteException;
+	public void addBooking(BookingDetail bookingDetail) throws RemoteException;
 
 	
 	/**
@@ -42,6 +42,6 @@ public interface IBookingManager extends Remote{
 	 * @return all available rooms for {@link date}
 	 * @throws ReservationException
 	 */
-	Set<Integer> getAvailableRooms(LocalDate date) throws RemoteException;
+	public Set<Integer> getAvailableRooms(LocalDate date) throws RemoteException;
 
 }
