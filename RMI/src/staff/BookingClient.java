@@ -40,11 +40,11 @@ public class BookingClient extends AbstractScriptedSimpleTest{
 	}
 
 	@Override
-	public void addBooking(BookingDetail bookingDetail) throws Exception {
+	public void addBooking(BookingDetail bookingDetail) throws RemoteException {
 		try {
-		booking.addBooking(bookingDetail);
-		} catch (Exception e) {
-			System.out.println("Room not available in those dates.");
+			booking.addBooking(bookingDetail);
+		} catch (RemoteException e) {
+			System.out.println(e.getMessage());
 		}
 	}
 

@@ -37,7 +37,7 @@ public abstract class AbstractScriptedSimpleTest {
 		//Print all rooms of the hotelq
 		printAllRooms();
 
-		isRoomAvailable(101, today); //true
+		System.out.println(isRoomAvailable(101, today)); //true
 		BookingDetail bd1 = new BookingDetail("Ansar", 101, today);
 		addBooking(bd1);//booking success
 

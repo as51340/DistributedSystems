@@ -97,7 +97,7 @@ public class BookingManager implements IBookingManager {
 		if(isRoomAvailable(bookingDetail.getRoomNumber(), bookingDetail.getDate())) {
 			for(Room room: rooms) {
 				synchronized(room) {
-					if(room.getRoomNumber() == bookingDetail.getRoomNumber()) { // this is our room
+					if(room.getRoomNumber().equals(bookingDetail.getRoomNumber())) { // this is our room
 						room.getBookings().add(bookingDetail);
 					}	
 				}

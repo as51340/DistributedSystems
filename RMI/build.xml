@@ -15,8 +15,8 @@
 	            => Package: staff Classname: BookingClient
 	   The third parameter is filename for the final zip.	   
     ******************************************************** -->
-  <property name="main.client" value="staff.BookingClient" />
-  <property name="main.server" value="" />
+  <property name="main.client" value="staff.ClientMain" />
+  <property name="main.server" value="hotel.BookingServer" />
   <property name="zip.filename" value="rmi" />
   <!--
     ********************************************************
