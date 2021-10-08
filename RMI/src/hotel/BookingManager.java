@@ -61,6 +61,7 @@ public class BookingManager implements IBookingManager {
 		Set<Integer> allRooms = new HashSet<Integer>();
 		Iterable<Room> roomIterator = Arrays.asList(rooms);
 		for (Room room : roomIterator) {
+			// No need for synchronization because rooms aren't going to change
 			allRooms.add(room.getRoomNumber());
 		}
 		return allRooms;
@@ -74,12 +75,14 @@ public class BookingManager implements IBookingManager {
 	 */
 	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
 		for(Room room: rooms) {
-			if(room.getRoomNumber() != roomNumber) continue; // check if this that room
-			List<BookingDetail> roomBookings = room.getBookings();
-			for(BookingDetail bd: roomBookings) {
-				if(bd.getDate().equals(date) == true) {
-					return false;
-				}
+			synchronized(room) {
+				if(room.getRoomNumber() != roomNumber) continue; // check if this that room
+				List<BookingDetail> roomBookings = room.getBookings();
+				for(BookingDetail bd: roomBookings) {
+					if(bd.getDate().equals(date) == true) {
+						return false;
+					}
+				}	
 			}
 		}
 		return true;
@@ -96,8 +99,10 @@ public class BookingManager implements IBookingManager {
 		// then we need to iterate again over our solution. Still better then situation with getAvailableRooms
 		if(isRoomAvailable(bookingDetail.getRoomNumber(), bookingDetail.getDate())) {
 			for(Room room: rooms) {
-				if(room.getRoomNumber() == bookingDetail.getRoomNumber()) { // this is our room
-					room.getBookings().add(bookingDetail);
+				synchronized(room) {
+					if(room.getRoomNumber() == bookingDetail.getRoomNumber()) { // this is our room
+						room.getBookings().add(bookingDetail);
+					}	
 				}
 			}
 		} else {
@@ -113,16 +118,18 @@ public class BookingManager implements IBookingManager {
 	public Set<Integer> getAvailableRooms(LocalDate date) {
 		Set<Integer> availableRoomsNumber = new TreeSet<Integer>(); // keeps rooms in sorted way
 		for(Room room: rooms) { // iterate over every room
-			List<BookingDetail> roomBookings = room.getBookings();
-			boolean roomAvailable = true;
-			for(BookingDetail bd: roomBookings) { // check all their bookings
-				if(bd.getDate().equals(date) == true) {
-					roomAvailable = false;
-					break;
+			synchronized(room) {
+				List<BookingDetail> roomBookings = room.getBookings();
+				boolean roomAvailable = true;
+				for(BookingDetail bd: roomBookings) { // check all their bookings
+					if(bd.getDate().equals(date) == true) {
+						roomAvailable = false;
+						break;
+					}
 				}
-			}
-			if(roomAvailable) {
-				availableRoomsNumber.add(room.getRoomNumber());
+				if(roomAvailable) {
+					availableRoomsNumber.add(room.getRoomNumber());
+				}	
 			}
 		}
 		return availableRoomsNumber;
