@@ -18,7 +18,8 @@ public class ClientMain {
 	public static void main(String[] args) throws Exception {
 		//singleUserTest();
 		//multipleUserTest();
-		multipleUserTest2();
+		//multipleUserTest2();
+		multipleUserTest3();
 	}
 	
 	
@@ -29,6 +30,23 @@ public class ClientMain {
 	private static void singleUserTest() throws Exception{
 		BookingClient client = new BookingClient();
 		client.run();
+	}
+	
+	private static void multipleUserTest3() throws Exception {
+		BookingClient client1 = new BookingClient();
+		BookingClient client2 = new BookingClient();
+		String[] names = {"Client1", "Client2"};
+		LocalDate today = LocalDate.now();
+		for(int i = 0; i < 2; i++) {
+			final int j = i;
+			new Thread(() -> {
+				try {
+					client1.addBooking(new BookingDetail(names[j], 101, today));
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}).start();
+		}
 	}
 	
 	private static void multipleUserTest2() throws Exception {
