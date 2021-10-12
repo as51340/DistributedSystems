@@ -72,7 +72,7 @@ public class BookingManager implements IBookingManager {
 	 */
 	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
 		for(Room room: rooms) {
-			if(room.getRoomNumber() != roomNumber) continue; // check if this that room
+			if(!room.getRoomNumber().equals(roomNumber)) continue; // check if this that room
 			synchronized(room) {
 				List<BookingDetail> roomBookings = room.getBookings();
 				for(BookingDetail bd: roomBookings) {

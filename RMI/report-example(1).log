@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.8)  9 OCT 2021 00:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.8)  12 OCT 2021 16:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -242,11 +242,11 @@ Package microtype Info: Character `029' is missing
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./report-example(1).aux) 
 ) 
 Here is how much of TeX's memory you used:
- 3947 strings out of 483183
- 62961 string characters out of 5966292
+ 3949 strings out of 483183
+ 62981 string characters out of 5966292
  340137 words of memory out of 5000000
  18906 multiletter control sequences out of 15000+600000
- 558057 words of font info for 50 fonts, out of 8000000 for 9000
+ 558140 words of font info for 51 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  41i,5n,46p,311b,211s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}</usr/share/texmf/fonts/type1/p
@@ -254,7 +254,7 @@ ublic/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.pfb></usr/s
 hare/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public
 /lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr17.pfb></usr/share/tex
 mf/fonts/type1/public/lm/lmri12.pfb>
-Output written on report-example(1).pdf (1 page, 125779 bytes).
+Output written on report-example(1).pdf (1 page, 125812 bytes).
 PDF statistics:
  33 PDF objects out of 1000 (max. 8388607)
  23 compressed objects within 1 object stream

@@ -35,8 +35,8 @@
 	RMI registry is the binder for Java RMI and it is used as name service. It stores mappings between names and references to remote objects which
 	are hosted on compute. RMI registry must be run on server. There are two main methods for registering: bind and rebind and the only difference is
 	that rebind can be called even if there is an object mapped to concrete name. Clients then need to use lookup function from Registry so they would be
-	able to call right method from object registered on RMI registry. Corba also uses naming registry.  
-	
+	able to call right method from object registered on RMI registry. Other remote techonologies don't use naming registry because they 
+	work differently. For example gRPC searches for IP address.
 	
 	\clearpage
 	

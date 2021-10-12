@@ -35,13 +35,14 @@ public class ClientMain {
 	private static void multipleUserTest3() throws Exception {
 		BookingClient client1 = new BookingClient();
 		BookingClient client2 = new BookingClient();
+		BookingClient[] clients = {client1, client2};
 		String[] names = {"Client1", "Client2"};
 		LocalDate today = LocalDate.now();
 		for(int i = 0; i < 2; i++) {
 			final int j = i;
 			new Thread(() -> {
 				try {
-					client1.addBooking(new BookingDetail(names[j], 101, today));
+					clients[j].addBooking(new BookingDetail(names[j], 101, today));
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
