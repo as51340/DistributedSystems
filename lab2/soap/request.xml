@@ -1,0 +1,9 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:gs="http://foodmenu.io/cs/webservice">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <gs:getMealRequest>
+            <gs:name>Portobello</gs:name>
+        </gs:getMealRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

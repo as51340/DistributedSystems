@@ -1,0 +1,19 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:gs="http://foodmenu.io/cs/webservice">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <gs:createNewOrderRequest>
+            <gs:order>
+				<gs:address>Groenstraat 2a</gs:address>
+				<gs:orderEntries>
+					<gs:mealName>Fish and Chips</gs:mealName>
+					<gs:quantity>5</gs:quantity>
+				</gs:orderEntries>
+				<gs:orderEntries>
+					<gs:mealName>Portobello</gs:mealName>
+					<gs:quantity>2</gs:quantity>
+				</gs:orderEntries>
+			</gs:order>
+        </gs:createNewOrderRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

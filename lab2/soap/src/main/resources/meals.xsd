@@ -1,0 +1,109 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://foodmenu.io/cs/webservice"
+           targetNamespace="http://foodmenu.io/cs/webservice" elementFormDefault="qualified">
+
+    <xs:element name="getMealRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="getMealResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="meal" type="tns:meal"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+	<xs:element name="getCheapestMealRequest">
+		<xs:complexType>
+			<xs:sequence></xs:sequence> <!-- But which child element should appear in the sequence???-->
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="getCheapestMealResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="meal" type="tns:meal"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="createNewOrderRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="order" type="tns:order"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="createNewOrderResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="confirmation" type="tns:orderConfirmation"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+
+
+    <xs:element name="getLargestMealRequest">
+        <xs:complexType>
+            <xs:sequence></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="getLargestMealResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="meal" type="tns:meal"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+
+    <xs:complexType name="meal">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="kcal" type="xs:int"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="mealtype" type="tns:mealtype"/>
+			<xs:element name="price" type="xs:float"/>
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="order">
+		<xs:sequence>
+			<xs:element name="address" type="xs:string"/>
+			<xs:element name="orderEntries" minOccurs="1" maxOccurs="unbounded" type="tns:orderEntry" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="orderEntry">
+		<xs:sequence>
+			<xs:element name="mealName" type="xs:string"/>
+			<xs:element name="quantity" type="xs:int"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="orderConfirmation">
+		<xs:sequence>
+			<xs:element name="meals" minOccurs="1" maxOccurs="unbounded" type="tns:meal" />
+			<xs:element name="deliveryTime" type="xs:dateTime" />
+			<xs:element name="address" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<!-- Restriction is used to restrict possible values for mealType class-->
+    <xs:simpleType name="mealtype">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="vegan"/>
+            <xs:enumeration value="veggie"/>
+            <xs:enumeration value="meat"/>
+            <xs:enumeration value="fish"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
