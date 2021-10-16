@@ -1,9 +1,5 @@
 #!/bin/bash
 
-echo "Packaging application..."
-mvn clean package
-echo
-echo
 echo "Sending request: request.xml"
 echo
 curl -v --header "content-type: text/xml" -d @request.xml http://localhost:8080/ws | xmllint --format -
