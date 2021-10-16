@@ -1,0 +1,11 @@
+# Distributed results hamme client sends request to bevekom server
+request.xml 0.012670s
+requestbiggest.xml 0.007956s
+requestcheapest.xml 0.004145s 
+createneworder.xml 0.012387s
+
+# Local results
+request.xml 0.003706s
+requestbiggest.xml 0.003224s
+requestcheapest.xml 0.003443s
+createneworder.xml 0.004850s
