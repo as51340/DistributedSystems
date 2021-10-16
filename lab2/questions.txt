@@ -1,0 +1,58 @@
+TODO return book and try to reserve for the last 15days of January.
+XML namespaces: we use it to avoid collision within different XML fragments.
+We can define in ihe XML fragment and then this is applied to all children
+with the same prefix.
+
+e.g
+<h:table xlmns:h="http://www.w3.org/TR/html4/">
+.
+.
+.
+</h:table>
+
+Or we can also define in the root:
+<root xlmns:h="...">
+  <h:table>
+  .
+  .
+  .
+  </h:table>
+
+XML schema descibes the structure of XML document, also referred to as XSD.
+  - the number of elements and attributes that can appear in a document
+  - data types
+  - restrictions on some elements and attributes
+  - specify default value..
+  - validate correctness of data
+  - it is easier to describe allowed document content
+  - easier conversion between data types
+  - define data patterns
+  - you can use existing XML parser
+
+XHR request - XMLHttpRequest
+
+XML Schema complexType - XML element that contains other elements and/or attributes.
+
+Restrictions on XML elements are called facets.
+But which child element should appear in the sequence???
+
+1. In XML Schema why do we use tns:meal in requests but meal specify under xs
+namespace?
+2. But which child element should appear in the sequence??? For sequence XSD element.
+3. Repeat what is Bean? Component bla bla...
+4. What target namespace do we have to define??? Why exactly foodservice.io...	I think we can define any.
+5. What is SOAP transport style?? Is this explained within answer what is SOAP binding.
+
+
+curl -X POST localhost:8080/ws -H "Content-Type: application/xml" -H "Accept: application/xml" -d request.xml
+
+Additional questions:
+1. HTTP POST method is used.
+2. Content-length is 791 and Content-typw is text/xml
+3. 200 OK is still returned is I ask for non-existing meal and 404 is I ask for non-existing SOAP operation
+4. Transport is set to https://schemas.xmlsoap.org/soap/http"/ and binding to http protocol localhost:8080/ws. WSDL is IDL for services:
+   a) Contains type definitions as XML schemas
+   b) What messages can be received/sent.
+   c) Port type defines an interface - the set of operations offered by one or more endpoints
+   d) Binding should specify which transport protocol should be used.
+   e) Service - defines an offered service, collection of related ports.	

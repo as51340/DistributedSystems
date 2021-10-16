@@ -38,6 +38,11 @@
 	able to call right method from object registered on RMI registry. Other remote techonologies don't use naming registry because they 
 	work differently. For example gRPC searches for IP address.
 	
+	\paragraph{4. Which concepts and configuration do you find in the WSDL in addition to what you specified in the meals.xsd? What is the SOAP binding style and transport configuration?}
+	Messages are part of WSDL which are used to define what kind of messages can
+	be received or sent and are consisted of different parts where each part is defined by a type. Types can be found in our meals.xsd schema: 1. complexType which contains other complex or primitive types and 2. primitive type like: int, string, float... Another XML element which is in
+	wsdl and not in our created schema is portType which defines interface and that is actually the set of operations offered by one or more endpoints where each operation consists of input/output messages. Binding is used to tell us how above mentioned portType is bound to transport protocol. Binding element then contains informations which transport protocol is used and additional informations which are specific to it. WSDL SOAP binding can be RPC style or document style binding and both can have encoded or literal use. Both communication style models are used to translate WSDL binding to a SOAP message body. With document style SOAP body can be structured in any way as long as the content of the SOAP message is valid XML. RPC style implies that SOAP request body contains operation name and the set of method parameters. With literal use model body contents should follow what is written in user-defined schema and in this way we can easily validate the message body and transform the message using e.g XSLT transformation language. Encoded use model allows us to write messages which use XSD datatypes and it's not connected to any user-defined schema.
+	
 	\clearpage
 	
 	% You can include diagrams here.
