@@ -34,14 +34,14 @@ XHR request - XMLHttpRequest
 XML Schema complexType - XML element that contains other elements and/or attributes.
 
 Restrictions on XML elements are called facets.
-But which child element should appear in the sequence???
 
 1. In XML Schema why do we use tns:meal in requests but meal specify under xs
 namespace?
 2. But which child element should appear in the sequence??? For sequence XSD element.
 3. Repeat what is Bean? Component bla bla...
 4. What target namespace do we have to define??? Why exactly foodservice.io...	I think we can define any.
-5. What is SOAP transport style?? Is this explained within answer what is SOAP binding.
+5. What is SOAP transport style?? Is this explained within answer what is SOAP binding, SOAP can be
+run over HTTP but also over BEEP or something like that, check that.
 
 
 curl -X POST localhost:8080/ws -H "Content-Type: application/xml" -H "Accept: application/xml" -d request.xml
@@ -56,3 +56,26 @@ Additional questions:
    c) Port type defines an interface - the set of operations offered by one or more endpoints
    d) Binding should specify which transport protocol should be used.
    e) Service - defines an offered service, collection of related ports.	
+
+Richardson maturity model for RESTful APIs
+ - Level 0: Remote APIs that only use HTTP as a transport system and do not rely on properties of 
+the web.
+ - Level 1 - Resources: URI to particular resource, typically only one HTTP method e.g. POST for everything.
+ - Level 2 - verbs: Correct methods for corresponding request - response codes are important. RPC Rest API
+ - Level 3 API - Hypermedia controls - resources should be discoverable by reflecting the hyperlinks
+related to the concerned resource, normally based on the applicaton state. RESTFul architecture.
+
+HATEOAS - Hypermia as the Engine of Application state
+Major advantage is that user need not have prior knowledge of the service or hardcode the URI structures
+for resources because HATEOAS allows the server the server to make URI changes as the API evolves without
+breaking the clients. That is only possible with this way of implementation where server provides
+links to access the resources and discover available actions dynamically. REST is stateless so in
+this way we are allowing user to determine the state of the current item that they are on. A lot of
+debates: slower responses, more data, more work but maybe you can cut some unnecessary calls that
+are not accessible to a particular item. Your API becomes more flexible because new features are 
+immediately available to your users. You can also upgrade something(change resources, require some
+new method parameters) without necessarily breaking backwards compatibility but this assumes that
+API is correctly implemented by users. Finally it creates a flexible API that provides dynamic data
+for devs based on your architecture and not their own. AWS API Gateway is example. To conclude,
+coupling and future upgrades can be managed in an advanced way if one very important condition is
+met and that is: users most implement API correctly.

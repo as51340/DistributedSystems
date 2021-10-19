@@ -12,6 +12,12 @@ import java.util.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
+/**
+ * You are now able to compose related hypermedia to your resource. True RESTFul API should reflect hyperlinks 
+ * related to the concerned resource or operation, considering the application state.
+ * @author r0876363
+ *
+ */
 @RestController
 public class MealsRestController {
 
@@ -44,8 +50,8 @@ public class MealsRestController {
 
     private EntityModel<Meal> mealToEntityModel(String id, Meal meal) {
         return EntityModel.of(meal,
-                linkTo(methodOn(MealsRestController.class).getMealById(id)).withSelfRel(),
-                linkTo(methodOn(MealsRestController.class).getMeals()).withRel("rest/meals"));
+                linkTo(methodOn(MealsRestController.class).getMealById(id)).withSelfRel(), // default self related link
+                linkTo(methodOn(MealsRestController.class).getMeals()).withRel("rest/meals")); // other URI
     }
 
 }
