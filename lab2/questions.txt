@@ -36,12 +36,20 @@ XML Schema complexType - XML element that contains other elements and/or attribu
 Restrictions on XML elements are called facets.
 
 1. In XML Schema why do we use tns:meal in requests but meal specify under xs
-namespace?
-2. But which child element should appear in the sequence??? For sequence XSD element.
-3. Repeat what is Bean? Component bla bla...
-4. What target namespace do we have to define??? Why exactly foodservice.io...	I think we can define any.
-5. What is SOAP transport style?? Is this explained within answer what is SOAP binding, SOAP can be
-run over HTTP but also over BEEP or something like that, check that.
+namespace? Because it is implemented in this way.
+2. But which child element should appear in the sequence??? For sequence XSD element. Not important.
+3. Repeat what is Bean? EJB is server side component model which offers us directly three tier 
+configuration with separation between business logic and tier which manages data stored in persistent
+storage. Bean is a component which offers one or more business interfaces to the clients and interface
+can be remote or local - local being more efficient and direct. There are session beans and message-
+driven beans. Bean is POJO - application logic is written in Java and annotations are used to ensure
+the correct behaviour in the EJB context.
+4. What target namespace do we have to define??? 
+Why exactly foodservice.io...	I think we can define any. Not sure what is semantics but this is
+pretty much question when we come into production phase.
+5. What is SOAP transport style?? SOAP can be run over HTTP but also over BEEP or something like
+that, check that. Meanwhile I figured out that FTP, SMTP can also be used. SOAP is used now only
+for some type of authentication, I think SAML
 
 
 curl -X POST localhost:8080/ws -H "Content-Type: application/xml" -H "Accept: application/xml" -d request.xml
