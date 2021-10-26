@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-/**
- * Server application.
- */
 public class AlmaOnlineServer {
     private static final Logger logger = Logger.getLogger(AlmaOnlineServer.class.getName());
 

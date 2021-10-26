@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
+//import "google/protobuf/timestamp.proto";
 
-//option experimental_allow_proto3 = true;
+
 option java_multiple_files = true;
 option java_package = "org.example.AlmaOnline.server";
 option java_outer_classname = "AlmaOnlineProto";
@@ -11,30 +11,50 @@ option objc_class_prefix = "AO";
 package almaonline;
 
 service AlmaOnline {
-	
+
 	rpc GetRestaurants(GetRestaurantsRequest) returns (stream GetRestaurantsResponse) {}
-	
+
 	rpc GetMenu(GetMenuRequest) returns (GetMenuResponse) {}
-	
+
 	rpc CreateDineInOrder(CreateDineInOrderRequest) returns (CreateDineInOrderResponse) {}
-	
+
 	rpc CreateDeliveryOrder(CreateDeliveryOrderRequest) returns (CreateDeliveryOrderResponse) {}
-	
+
 	rpc GetOrder(GetOrderRequest) returns (GetOrderResponse) {}
-		
+
 }
 
+message OrderQuote {
+	optional string id = 1;
+	Date creationDate = 2;
+	optional string customer = 3;
+	repeated string lineItems = 4;
+}
+
+message DeliveryOrderQuote {
+	optional string deliveryAddress = 1;
+	OrderQuote quote = 2;
+}
+
+message DineInOrderQuote {
+	Date reservationDate = 1;
+	OrderQuote quote = 2;
+}
 
 message ItemInfo {
 	optional string name = 1;
 	double price = 2;
 }
 
-
+message Date {
+	int32 year = 1;
+	int32 month = 2;
+	int32 day = 3;
+}
 
 message GetOrderResponse {
 	optional string customer = 1;
-	google.protobuf.Timestamp createDate = 2;
+	Date createDate = 2;
 	repeated ItemInfo items = 3;
 }
 
@@ -46,11 +66,12 @@ message GetOrderRequest {
 
 
 message CreateDeliveryOrderResponse {
-	
+
 }
 
 message CreateDeliveryOrderRequest {
-	optional string deliveryAddress = 1;
+	optional string restaurantId = 1;
+	DeliveryOrderQuote quote = 2;
 }
 
 message CreateDineInOrderResponse {
@@ -58,7 +79,8 @@ message CreateDineInOrderResponse {
 }
 
 message CreateDineInOrderRequest {
-	google.protobuf.Timestamp reservationDate = 1;
+	optional string restaurantId = 1;
+	DineInOrderQuote quote = 2;
 }
 
 message GetMenuResponse {
@@ -66,7 +88,7 @@ message GetMenuResponse {
 }
 
 message GetMenuRequest {
-	optional string reservationId = 1;
+	optional string restaurantId = 1;
 }
 
 message GetRestaurantsRequest {
@@ -74,6 +96,6 @@ message GetRestaurantsRequest {
 
 message GetRestaurantsResponse {
 	optional string id = 1;
-	optional string name = 2;	
+	optional string name = 2;
 }
 

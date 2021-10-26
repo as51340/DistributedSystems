@@ -5,15 +5,11 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.example.AlmaOnline.provided.client.AlmaOnlineClientAdapter;
 import org.example.AlmaOnline.required.AlmaOnlineClientGrpcAdapter;
-//import org.example.AlmaOnline.server.AlmaOnlineGrpc;
+import org.example.AlmaOnline.server.AlmaOnlineGrpc;
 
 import java.util.logging.Logger;
 
-/**
- * I think it simulates user's behaviour.
- */
-public class AlmaClientApp {	
-	
+public class AlmaClientApp {
     private Logger logger = Logger.getLogger(AlmaClientApp.class.getName());
 
     private final AlmaOnlineGrpc.AlmaOnlineBlockingStub blocking;

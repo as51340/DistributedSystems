@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Menu {
-	
-	// Menu has map of items => it's efficient.
-	
     private final Map<String, Item> items = new HashMap<>();
 
     public Menu() { }

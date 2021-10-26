@@ -4,11 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 public class OrderQuote {
-	
     private final String id;
     private final Date creationDate;
     private final String customer;
-    private final List<String> lineItems; // What is lineItems?
+    private final List<String> lineItems;
 
     public OrderQuote(String id, Date creationDate, String customer, List<String> lineItems) {
         this.id = id;

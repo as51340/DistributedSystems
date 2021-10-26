@@ -32,6 +32,7 @@
 /home/andi/leuven/DistributedSystems/lab3/gRPC/src/main/java/org/example/AlmaOnline/provided/client/BaseOrderInfo.java
 /home/andi/leuven/DistributedSystems/lab3/gRPC/src/main/java/org/example/AlmaOnline/provided/service/DeliveryOrderQuote.java
 /home/andi/leuven/DistributedSystems/lab3/gRPC/target/generated-sources/protobuf/java/org/example/AlmaOnline/server/GetMenuResponseOrBuilder.java
+/home/andi/leuven/DistributedSystems/lab3/gRPC/target/generated-sources/protobuf/java/org/example/AlmaOnline/server/AlmaOnline.java
 /home/andi/leuven/DistributedSystems/lab3/gRPC/target/generated-sources/protobuf/java/org/example/AlmaOnline/server/CreateDineInOrderResponseOrBuilder.java
 /home/andi/leuven/DistributedSystems/lab3/gRPC/src/main/java/org/example/AlmaOnline/provided/server/AlmaOnlineServerAdapter.java
 /home/andi/leuven/DistributedSystems/lab3/gRPC/target/generated-sources/protobuf/java/org/example/AlmaOnline/server/CreateDineInOrderRequestOrBuilder.java

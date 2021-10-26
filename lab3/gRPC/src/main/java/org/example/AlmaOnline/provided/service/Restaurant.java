@@ -5,10 +5,7 @@ import org.example.AlmaOnline.provided.service.exceptions.OrderException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 public class Restaurant {
-	// AlmaOnlineService contains hash map of all restaurants
-	
     private final String id;
     private final String name;
     private final Menu menu;

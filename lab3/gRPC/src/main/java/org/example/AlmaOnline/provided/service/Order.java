@@ -3,13 +3,11 @@ package org.example.AlmaOnline.provided.service;
 import java.util.*;
 
 public abstract class Order {
-	
     private final String id;
     private final Date creationDate;
     private final String customer;
     private final Map<String, Item> items = new HashMap<>();
 
-    // Why use map when we don't search items over names
 
     Order(String id, Date creationDate, String customer, List<Item> items) {
         this.id = id;

@@ -1,8 +1,6 @@
 package org.example.AlmaOnline.provided.service;
 
 public class Item {
-	// One item that can be ordered
-	
     private final String name;
     private final double price;
 

@@ -4,12 +4,7 @@ import org.example.AlmaOnline.provided.service.exceptions.OrderException;
 
 import java.util.*;
 
-/**
- * Bundles all business logic together in an compact service API that exposes the methods
- */
 public class AlmaOnlineService {
-	
-	
     private final Map<String, Restaurant> restaurants;
 
     public AlmaOnlineService(List<Restaurant> restaurants) {
