@@ -1,0 +1,29 @@
+Web role communicated with worker roles in asynchrnous manner. Worker role responds by writing results
+to tables. Web role says to user - come later.
+Blobs are some small storage.
+Fault domains - set of devices that can fail indepenedtly. 
+You don't need to pay20% for 99.9% availability.- it's public cloud, whato do you expect :)
+Usually two fault domains - because usually user deploys on two virtual machines - ofc you pay for
+both of them.
+
+Comparison between SQL storage and table storage - SQL queries are much faster but more expensive.
+4TB = 16k$
+
+- Azure is mainly PaaS
+- cache maintaned completely by azure
+
+
+
+
+Google App Engine
+- firebase authentication - you can add custom claims to identity token - for roles
+- on local environment it won't be signed you dont need to check something
+- automatically scaling and load balancing
+- push subscription
+- duplicate messages are possible because of at-least-once semantics
+- pub/sub - usage of topic 
+
+We will build somewthing similar to Tickermaster
+- background worker should then contact theatre company
+- one platform will be tolerant
+- firebase emulator - you need to specify 

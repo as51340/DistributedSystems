@@ -42,9 +42,16 @@ public class AlmaOnlineServerGrpcAdapter extends AlmaOnlineGrpc.AlmaOnlineImplBa
 
     @Override
     public void getMenu(GetMenuRequest request, StreamObserver<GetMenuResponse> responseObserver) {
-        //Optional<Menu> menu = service.getRestaurantMenu(request.getReservationId());
-        //Map<String, Item> menuItems = menu.
-
+        Optional<Menu> menu = service.getRestaurantMenu(request.getRestaurantId());
+        Map<String, Double> items = new HashMap<>();
+        if(menu.isPresent()) {
+            Collection<Item> menuItems = menu.get().getItems();
+            for(Item item : menuItems) {
+                items.put(item.getName(), item.getPrice());
+            }
+            responseObserver.onNext(GetMenuResponse.newBuilder().putAllItems(items).build());
+        }
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -84,10 +91,21 @@ public class AlmaOnlineServerGrpcAdapter extends AlmaOnlineGrpc.AlmaOnlineImplBa
 
     @Override
     public void getOrder(GetOrderRequest request, StreamObserver<GetOrderResponse> responseObserver) {
-        //Optional<Order> order = service.getOrder(request.getRestaurantId(), request.getOrderId());
-        //responseObserver.onNext(GetOrderResponse.newBuilder().);
-
+        Optional<Order> optionalOrder = service.getOrder(request.getRestaurantId(), request.getOrderId()); //
+        String customer = null;
+        org.example.AlmaOnline.server.Date createDate = null;
+        if(optionalOrder.isPresent()) {
+            Order order = optionalOrder.get();
+            customer = order.getCustomer();
+            createDate = org.example.AlmaOnline.server.Date.newBuilder().setYear(order.getCreationDate().getYear()).setMonth(order.getCreationDate().getMonth()).setDay(order.getCreationDate().getDay()).build();
+            Collection<Item> businessItems =  order.getItems();
+            Collection<ItemInfo> outputInfos = new ArrayList<>();
+            for(Item busItem: businessItems) {
+                outputInfos.add(ItemInfo.newBuilder().setName(busItem.getName()).setPrice(busItem.getPrice()).build());
+            }
+            GetOrderResponse response = GetOrderResponse.newBuilder().setCreateDate(createDate).setCustomer(customer).addAllItems(outputInfos).build();
+            responseObserver.onNext(response);
+        }
+        responseObserver.onCompleted();
     }
-
-    // -- Put the code for your implementation down below -- //
 }

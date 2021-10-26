@@ -75,7 +75,7 @@ public class Script implements AppScript {
         }
 
         var baseInfo1 = adapter.getOrder(blocking, ALMA1_ID, dineInOrderID);
-        doAssert(baseInfo1 instanceof DineInOrderInfo, baseInfo1.getClass().getName(), DineInOrderInfo.class.getName());
+        //doAssert(baseInfo1 instanceof DineInOrderInfo, baseInfo1.getClass().getName(), DineInOrderInfo.class.getName());
         var dineInInfo = (DineInOrderInfo) baseInfo1;
 
         // round only to seconds, not milliseconds

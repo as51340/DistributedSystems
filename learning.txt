@@ -1,4 +1,4 @@
-Google RPC
+lGoogle RPC
 - problems with JavaRMI: doesn't acknowledge heterogeneity, transparency is very
 important for them but that can promote ignorance: network failures, bandwidh and latency, performance
 SOAP/REST
