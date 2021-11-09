@@ -1,0 +1,11 @@
+The business logic allows consumers to retrieve and reserve available shows and seats,
+and managers to discover the best performing shows and most loyal clients. Through the Spring Boot
+middleware, you can quickly set up and launch your application. You will enforce the elevated privileges of
+managers by implementing authentication and authorization through Firebase Authentication.
+
+To improve
+scalability and guarantee high availability, you will use indirect communication through Cloud Pub/Sub to
+decouple reservation processing from other back-end tasks, all while maintaining all-or-nothing semantics.
+You will ensure that the platform is fault tolerant even when relying on an unreliable service. Finally,
+while your application runs primarily locally for test purposes, the interaction with external services and
+the division of tasks between different processes and services already makes it a distributed system.

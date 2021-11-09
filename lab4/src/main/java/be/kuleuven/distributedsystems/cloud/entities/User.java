@@ -18,6 +18,10 @@ public class User {
         return role;
     }
 
+    /**
+     * Used in authentication process
+     * @return
+     */
     public boolean isManager() {
         return this.role != null && this.role.equals("manager");
     }
