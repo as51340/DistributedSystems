@@ -1,0 +1,17 @@
+{
+  "emulators": {
+    "ui": {
+      "enabled": true,
+      "port": 8081
+    },
+    "auth": {
+      "port": 8082
+    },
+    "pubsub": {
+      "port": 8083
+    },
+    "firestore": {
+      "port": 8084
+    }
+  }
+}
