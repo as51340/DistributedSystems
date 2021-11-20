@@ -9,3 +9,7 @@ decouple reservation processing from other back-end tasks, all while maintaining
 You will ensure that the platform is fault tolerant even when relying on an unreliable service. Finally,
 while your application runs primarily locally for test purposes, the interaction with external services and
 the division of tasks between different processes and services already makes it a distributed system.
+
+
+Once authenticated in the browser, the web application will send an OAuth Identity token containing the
+user’s identity and attributes to the /authenticate endpoint. Token has been sent from login.js script to authenticate.

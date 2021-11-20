@@ -1,6 +1,9 @@
 package be.kuleuven.distributedsystems.cloud.auth;
 
 import be.kuleuven.distributedsystems.cloud.entities.User;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,10 +32,21 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (session != null) {
             // TODO: (level 1) decode Identity Token and assign correct email and role
             // TODO: (level 2) verify Identity Token
-            var user = new User("test@example.com", "");
 
-            SecurityContext context = SecurityContextHolder.getContext();
-            context.setAuthentication(new FirebaseAuthentication(user));
+            String token = session.getValue();
+
+            try {
+                DecodedJWT jwt = JWT.decode(token);
+
+                String email = jwt.getClaim("email").asString(); // here you can also choose email_verified
+                String role = jwt.getClaim("role").asString(); // you need to setup role in firebase emulator
+
+                var user = new User(email, role);
+                SecurityContext context = SecurityContextHolder.getContext();
+                context.setAuthentication(new FirebaseAuthentication(user));
+            } catch (JWTDecodeException exception){
+                System.err.println("Error happened while trying to decode token!");
+            }
         }
         filterChain.doFilter(request, response);
     }

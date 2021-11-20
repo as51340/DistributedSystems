@@ -10,7 +10,7 @@ import java.util.UUID;
 public class Ticket {
     private String company;
     private UUID showId;
-    private UUID seatId;
+    private UUID seatId; // Ticket ima reference na seat
     private UUID ticketId;
     private String customer;
 

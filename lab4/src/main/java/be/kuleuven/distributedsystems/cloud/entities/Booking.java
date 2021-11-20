@@ -10,7 +10,7 @@ import java.util.UUID;
  * references to the identifiers of its constituent tickets, and additionally has its own reference ID and
  * properties such as the customer who made it and a timestamp.
  */
-public class Booking {
+public class Booking { // Collection of tickets
     private UUID id;
     private LocalDateTime time;
     private List<Ticket> tickets;

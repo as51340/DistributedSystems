@@ -7,6 +7,7 @@ import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -144,6 +145,7 @@ public class ViewController {
         modelAndView.addObject("shows", shows);
         return modelAndView;
     }
+
 
     @GetMapping("/manager")
     public ModelAndView viewManager(
