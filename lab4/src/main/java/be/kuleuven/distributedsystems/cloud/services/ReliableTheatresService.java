@@ -19,7 +19,7 @@ public class ReliableTheatresService {
     private final String reliableTheatresURL = "https://reliabletheatrecompany.com";
 
     @Autowired
-    ApplicationContext context;
+    WebClient.Builder webClientBuilder;
 
     /**
      * Dependency injection
@@ -33,19 +33,12 @@ public class ReliableTheatresService {
         /**
          * Performing blocking request
          */
-        WebClient webClient = ((WebClient.Builder) context.getBean("webClientBuilder")).baseUrl(reliableTheatresURL).build();
+        WebClient webClient = webClientBuilder.baseUrl(reliableTheatresURL).build();
         //Show[] shows =  webClient.get().uri("/shows?key=wCIoTqec6vGJijW2meeqSokanZuqOL").retrieve().bodyToMono(Show[].class).block();
-
         Mono<Show[]> loc_shows = webClient.get().uri("/shows?key=wCIoTqec6vGJijW2meeqSokanZuqOL")
                         .retrieve().bodyToMono(Show[].class).log();
-
-
         // Show[] shows = (Show[]) loc_shows.block();
-
         Object[] shows = loc_shows.block();
-
-
-
 
         System.out.println("Printing shows!");
         //System.out.println(shows)

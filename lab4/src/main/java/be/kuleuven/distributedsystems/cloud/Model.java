@@ -2,6 +2,8 @@ package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
 import be.kuleuven.distributedsystems.cloud.services.ReliableTheatresService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -15,13 +17,15 @@ public class Model {
 
     private ReliableTheatresService reliableTheatresService = null;
 
+    @Autowired
+    String projectId;
+
     public Model(ReliableTheatresService reliableTheatresService) {
         this.reliableTheatresService = reliableTheatresService;
     }
 
     public List<Show> getShows() {
         // TODO: return all shows
-        //return new ArrayList<>();
         return this.reliableTheatresService.getShows();
     }
 
