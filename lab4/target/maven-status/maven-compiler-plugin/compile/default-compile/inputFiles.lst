@@ -1,6 +1,8 @@
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/AuthController.java
+/home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/pubsub/PubSubHandler.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/Ticket.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/auth/WebSecurityConfig.java
+/home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/services/ReliableTheatresService.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/Quote.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/auth/SecurityFilter.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/Cart.java

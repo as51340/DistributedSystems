@@ -60,5 +60,6 @@ public class APIController {
         headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
         headers.add(HttpHeaders.LOCATION, "/account");
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        // I would say that this method should definitely be publisher
     }
 }

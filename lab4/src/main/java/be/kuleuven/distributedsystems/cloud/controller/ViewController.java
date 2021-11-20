@@ -19,6 +19,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * All that needs to be displayed
+ */
 @RestController
 public class ViewController {
     private final Model model;

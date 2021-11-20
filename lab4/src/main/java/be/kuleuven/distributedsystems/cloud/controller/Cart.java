@@ -26,6 +26,11 @@ public final class Cart {
         }
     }
 
+    /**
+     * You basically encode list of quotes to cookie
+     * @param cart
+     * @return
+     */
     public static ResponseCookie toCookie(List<Quote> cart) {
         try {
             return ResponseCookie.from("cart",

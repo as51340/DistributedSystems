@@ -1,0 +1,3 @@
+be/kuleuven/distributedsystems/cloud/services/ReliableTheatresService.class
+be/kuleuven/distributedsystems/cloud/auth/SecurityFilter.class
+be/kuleuven/distributedsystems/cloud/auth/SecurityFilter$FirebaseAuthentication.class
