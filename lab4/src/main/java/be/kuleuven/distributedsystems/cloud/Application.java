@@ -60,46 +60,19 @@ public class Application {
     }
 
     @Bean
-    CredentialsProvider pubSubCredentialsProvider() {
+    public CredentialsProvider pubSubCredentialsProvider() {
         return NoCredentialsProvider.create();
     }
 
     @Bean
-    TransportChannelProvider channelProvider() {
+    public TransportChannelProvider channelProvider() {
         String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        System.out.println("Hostport: " + hostport);
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         TransportChannelProvider channelProvider =
                 FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
         return channelProvider;
     }
-
-
-    /*@Bean
-    TopicAdminClient topicAdminClient() {
-        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
-        //String hostport = "localhost:8085";
-        System.out.println("Hostport: " + hostport);
-
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
-        try {
-            TransportChannelProvider channelProvider =
-                    FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-            CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
-
-            // Set the channel and credentials provider when creating a `TopicAdminClient`.
-            // Similarly for SubscriptionAdminClient
-            return TopicAdminClient.create(TopicAdminSettings.newBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .build());
-        } catch(Exception e) {
-            System.out.println(e.toString());
-        }
-        return null;
-    }*/
-
-
-
 
     /*
      * You can use this builder to create a Spring WebClient instance which can be used to make REST-calls.

@@ -9,6 +9,7 @@
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/Test.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/ViewController.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/User.java
+/home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/pubsub/requests/BestCustomersRequest.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/Application.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/Seat.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/Model.java

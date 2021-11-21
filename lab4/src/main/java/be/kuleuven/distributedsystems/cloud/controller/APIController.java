@@ -3,10 +3,13 @@ package be.kuleuven.distributedsystems.cloud.controller;
 import be.kuleuven.distributedsystems.cloud.Model;
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
+import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,10 +18,20 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class APIController {
     private final Model model;
+    private final PubSubHandler pubSubHandler;
+
+    private final String confirmQuotesTopicID = "confirmQuotes";
+    private final String confirmQuotesSchema = "confirmQuotesSchema";
 
     @Autowired
-    public APIController(Model model) {
+    public APIController(Model model, PubSubHandler pubSubHandler) {
         this.model = model;
+        this.pubSubHandler = pubSubHandler;
+    }
+
+    @PostConstruct
+    public void init() throws IOException {
+        pubSubHandler.createTopicWithSchema(confirmQuotesTopicID, confirmQuotesSchema);
     }
 
     @PostMapping(path = "/addToCart", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})

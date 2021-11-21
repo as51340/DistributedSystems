@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class ViewController {
 
     private final Model model;
-    private PubSubHandler pubSubHandler;
+    private final PubSubHandler pubSubHandler;
     private final String bestCustomerTopicID = "bestCustomer";
     private final String bestCustomerSchema = "bestCustomersSchema";
 
@@ -180,7 +180,8 @@ public class ViewController {
             @CookieValue(value = "cart", required = false) String cartString) throws Exception {
         // TODO: limit this function to managers
 
-        pubSubHandler.publishWithErrorHandlerExample(bestCustomerTopicID);
+        // Careful how to handle empty object
+        pubSubHandler.publishWithErrorHandlerExample(bestCustomerTopicID, null);
 
         List<Quote> quotes = Cart.fromCookie(cartString);
         ModelAndView modelAndView = new ModelAndView("manager");
