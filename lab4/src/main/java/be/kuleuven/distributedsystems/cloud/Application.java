@@ -1,5 +1,15 @@
 package be.kuleuven.distributedsystems.cloud;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.TopicAdminClient;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import com.google.pubsub.v1.Topic;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -18,6 +28,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.util.Objects;
 
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
@@ -48,6 +59,33 @@ public class Application {
         return "demo-distributed-systems-kul";
     }
 
+    @Bean
+    TopicAdminClient topicAdminClient() {
+        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        //String hostport = "localhost:8085";
+        System.out.println("Hostport: " + hostport);
+
+        ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
+        try {
+            TransportChannelProvider channelProvider =
+                    FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+            CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+
+            // Set the channel and credentials provider when creating a `TopicAdminClient`.
+            // Similarly for SubscriptionAdminClient
+            return TopicAdminClient.create(TopicAdminSettings.newBuilder()
+                    .setTransportChannelProvider(channelProvider)
+                    .setCredentialsProvider(credentialsProvider)
+                    .build());
+        } catch(Exception e) {
+            System.out.println(e.toString());
+        }
+        return null;
+    }
+
+
+
+
     /*
      * You can use this builder to create a Spring WebClient instance which can be used to make REST-calls.
      */
@@ -64,4 +102,5 @@ public class Application {
         firewall.setAllowUrlEncodedSlash(true);
         return firewall;
     }
+
 }

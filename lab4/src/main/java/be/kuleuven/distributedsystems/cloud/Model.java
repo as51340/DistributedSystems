@@ -1,12 +1,16 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
+import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
 import be.kuleuven.distributedsystems.cloud.services.ReliableTheatresService;
+import com.google.pubsub.v1.Encoding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -17,10 +21,7 @@ public class Model {
 
     private ReliableTheatresService reliableTheatresService = null;
 
-    @Autowired
-    String projectId;
-
-    public Model(ReliableTheatresService reliableTheatresService) {
+    public Model(ReliableTheatresService reliableTheatresService) throws IOException {
         this.reliableTheatresService = reliableTheatresService;
     }
 

@@ -5,6 +5,18 @@ import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
+import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.TopicAdminClient;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import org.eclipse.jetty.util.IO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +26,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -26,9 +40,20 @@ import java.util.stream.Collectors;
 public class ViewController {
     private final Model model;
 
+    private PubSubHandler pubSubHandler;
+
     @Autowired
-    public ViewController(Model model) {
+    TopicAdminClient topicAdminClient;
+
+    @Autowired
+    public ViewController(Model model, PubSubHandler pubSubHandler)  {
         this.model = model;
+        this.pubSubHandler = pubSubHandler;
+    }
+
+    @PostConstruct
+    public void init() throws IOException {
+        pubSubHandler.createTopicWithSchema(topicAdminClient, "test", "testSchema");
     }
 
     @GetMapping("/_ah/warmup")
@@ -38,6 +63,7 @@ public class ViewController {
     @GetMapping({"/", "/shows"})
     public ModelAndView viewShows(
             @CookieValue(value = "cart", required = false) String cartString) {
+
         List<Quote> quotes = Cart.fromCookie(cartString);
         ModelAndView modelAndView = new ModelAndView("shows");
         modelAndView.addObject("cartLength",
