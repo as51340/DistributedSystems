@@ -6,6 +6,7 @@ import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
+import be.kuleuven.distributedsystems.cloud.pubsub.requests.ConfirmQuotesRequest;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -61,9 +62,15 @@ public class ViewController {
 
     @GetMapping({"/", "/shows"})
     public ModelAndView viewShows(
-            @CookieValue(value = "cart", required = false) String cartString) {
+            @CookieValue(value = "cart", required = false) String cartString) throws IOException, InterruptedException {
 
         List<Quote> quotes = Cart.fromCookie(cartString);
+
+        // TEST TEST TEST
+        // ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(quotes, AuthController.getUser().getEmail());
+        // this.pubSubHandler.publishWithErrorHandlerExample("confirmQuotes", confirmQuotesRequest);
+
+
         ModelAndView modelAndView = new ModelAndView("shows");
         modelAndView.addObject("cartLength",
                 Integer.toString(quotes.size()));

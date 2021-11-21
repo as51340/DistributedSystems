@@ -1,5 +1,6 @@
 package be.kuleuven.distributedsystems.cloud.pubsub;
 
+import be.kuleuven.distributedsystems.cloud.pubsub.requests.PubSubRequest;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -13,6 +14,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.*;
@@ -119,7 +121,7 @@ public class PubSubHandler {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void publishWithErrorHandlerExample(String topicId, Object message)
+    public void publishWithErrorHandlerExample(String topicId, PubSubRequest message)
             throws IOException, InterruptedException {
         TopicName topicName = TopicName.of(projectId, topicId);
         Publisher publisher = null;
@@ -128,9 +130,16 @@ public class PubSubHandler {
             CredentialsProvider credentialProvider = NoCredentialsProvider.create();
             publisher = Publisher.newBuilder(topicName).setChannelProvider(channelProvider).setCredentialsProvider(pubSubCredentialsProvider).build();
 
-            //ByteString data = ByteString.copyFromUtf8(message);
+            PubsubMessage pubsubMessage = null;
+            if(message == null) {
+                pubsubMessage = PubsubMessage.newBuilder().putAllAttributes(
+                        ImmutableMap.of("Empty", "attribute")).build(); // put some random attributes if it is empty.
 
-            PubsubMessage pubsubMessage = PubsubMessage.newBuilder().build();
+            } else {
+                ByteString data = message.toByteString();
+                pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
+            }
+
             // Once published, returns a server-assigned message id (unique within the topic)
             ApiFuture<String> future = publisher.publish(pubsubMessage);
             // Add an asynchronous callback to handle success / failure
@@ -142,15 +151,15 @@ public class PubSubHandler {
                             if (throwable instanceof ApiException) {
                                 ApiException apiException = ((ApiException) throwable);
                                 // details on the API exception
-                                System.out.println(apiException.getStatusCode().getCode());
-                                System.out.println(apiException.isRetryable());
+                                System.out.println("Publisher API Exception code: " + apiException.getStatusCode().getCode());
+                                System.out.println("Publisher API exception retryable: " + apiException.isRetryable());
                             }
-                            System.out.println("Error publishing message : " + pubsubMessage.getMessageId());
+                            System.out.println("Error publishing message for topic : " + topicId);
                         }
                         @Override
                         public void onSuccess(String messageId) {
                             // Once published, returns server-assigned message ids (unique within the topic)
-                            System.out.println("Published message ID: " + messageId);
+                            System.out.println("Successfully published message with ID: " + messageId  + " for topic: " + topicId);
                         }},
                     MoreExecutors.directExecutor());
 

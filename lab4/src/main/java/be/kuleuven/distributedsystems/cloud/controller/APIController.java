@@ -4,6 +4,8 @@ import be.kuleuven.distributedsystems.cloud.Model;
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
+import be.kuleuven.distributedsystems.cloud.pubsub.requests.ConfirmQuotesRequest;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +68,10 @@ public class APIController {
     public ResponseEntity<Void> confirmCart(
             @CookieValue(value = "cart", required = false) String cartString) throws Exception {
         List<Quote> cart = Cart.fromCookie(cartString);
+
+        // ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(cart, AuthController.getUser().getEmail());
+
+        // Remember this because you will need to get your email also.
         this.model.confirmQuotes(new ArrayList<>(cart), AuthController.getUser().getEmail());
         cart.clear();
         ResponseCookie cookie = Cart.toCookie(cart);

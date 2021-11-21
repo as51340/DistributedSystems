@@ -28,7 +28,7 @@ public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         byte[] objBytes = null;
         try(ObjectOutputStream out = new ObjectOutputStream(bos)) {
-            System.out.println("Class that I'm converting to byte array: " + this.getClass().toString());
+            // System.out.println("Class that I'm converting to byte array: " + this.getClass().toString());
             out.writeObject(this);
             out.flush();
             objBytes = bos.toByteArray();

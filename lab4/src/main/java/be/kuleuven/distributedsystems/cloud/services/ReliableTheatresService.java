@@ -40,7 +40,7 @@ public class ReliableTheatresService {
         // Show[] shows = (Show[]) loc_shows.block();
         // Object[] shows = loc_shows.block();
 
-        System.out.println("Printing shows!");
+       // System.out.println("Printing shows!");
         //System.out.println(shows)
         // for(Show show: shows) {
         //     System.out.println(show.getName());
