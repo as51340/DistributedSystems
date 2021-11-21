@@ -51,6 +51,12 @@ Run just firebase emulator which will start pub/sub.
 
 Maybe change getting keys from server. Ask them how to use asynchronous in the keys example, can I benefit something from it.
 
+Questions:
+1. I think you should change push endpoint so it becomes same for receiver and publisher.
+2. Authenticate or no pub/sub requests
+3. Idempotent operation - can we save ids of all received messages and check like that?
+
+Ask about schema
 
 
 

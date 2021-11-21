@@ -33,7 +33,7 @@ public class APIController {
 
     @PostConstruct
     public void init() throws IOException {
-        pubSubHandler.createTopicWithSchema(confirmQuotesTopicID, confirmQuotesSchema);
+        //pubSubHandler.createTopic(confirmQuotesTopicID);
     }
 
     @PostMapping(path = "/addToCart", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})

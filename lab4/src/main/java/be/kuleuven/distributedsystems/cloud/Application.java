@@ -7,6 +7,7 @@ import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Topic;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -72,6 +73,11 @@ public class Application {
         TransportChannelProvider channelProvider =
                 FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
         return channelProvider;
+    }
+
+    @Bean
+    public PushConfig pushConfig() {
+        return PushConfig.newBuilder().setPushEndpoint("http://localhost:8080/pubsub").build();
     }
 
     /*

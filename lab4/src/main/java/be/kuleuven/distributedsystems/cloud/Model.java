@@ -10,6 +10,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -17,11 +18,9 @@ import java.util.*;
 @Component
 public class Model {
 
-    private final String reliableTheatresURL = "https://reliabletheatrecompany.com/shows?key=wCIoTqec6vGJijW2meeqSokanZuqOL";
-
     private ReliableTheatresService reliableTheatresService = null;
 
-    public Model(ReliableTheatresService reliableTheatresService) throws IOException {
+    public Model(ReliableTheatresService reliableTheatresService, PubSubHandler pubSubHandler) {
         this.reliableTheatresService = reliableTheatresService;
     }
 

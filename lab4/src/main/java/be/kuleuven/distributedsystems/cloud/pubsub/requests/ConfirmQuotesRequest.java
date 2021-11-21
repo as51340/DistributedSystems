@@ -2,9 +2,12 @@ package be.kuleuven.distributedsystems.cloud.pubsub.requests;
 
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import com.google.protobuf.ByteString;
+import org.eclipse.jetty.websocket.jsr356.EncoderFactory;
 
+import java.beans.Encoder;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +25,22 @@ public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
         this.customer = customer;
     }
 
+    public String getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(String customer) {
+        this.customer = customer;
+    }
+
+    public List<Quote> getQuotes() {
+        return quotes;
+    }
+
+    public void setQuotes(List<Quote> quotes) {
+        this.quotes = quotes;
+    }
+
     @Override
     public ByteString toByteString() throws IOException {
         // ByteString customerBS = ByteString.copyFromUtf8(customer);
@@ -35,6 +54,7 @@ public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
         } finally {
             bos.close();
         }
+        System.out.println("Bytes: " +objBytes );
         return ByteString.copyFrom(objBytes);
     }
 
@@ -67,6 +87,9 @@ public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
         ByteString bs = confirmQuotesRequest.toByteString();
         System.out.println("ByteString of an object: " + bs.toString());
 
+        String encoded = Base64.getEncoder().encodeToString(bs.toByteArray());
+        System.out.println("Encoded string: " + encoded);
+
         // Try to convert back from byte string
         ConfirmQuotesRequest convertedConfirmQuotesRequest = new ConfirmQuotesRequest();
         convertedConfirmQuotesRequest.fromByteString(bs);
@@ -77,6 +100,7 @@ public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
             System.out.println(quote.getCompany());
         }
         System.out.println("Customer: " + confirmQuotesRequest.customer);
+
 
     }
 }
