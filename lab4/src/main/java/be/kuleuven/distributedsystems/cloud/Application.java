@@ -60,6 +60,21 @@ public class Application {
     }
 
     @Bean
+    CredentialsProvider pubSubCredentialsProvider() {
+        return NoCredentialsProvider.create();
+    }
+
+    @Bean
+    TransportChannelProvider channelProvider() {
+        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
+        TransportChannelProvider channelProvider =
+                FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+        return channelProvider;
+    }
+
+
+    /*@Bean
     TopicAdminClient topicAdminClient() {
         String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
         //String hostport = "localhost:8085";
@@ -81,7 +96,7 @@ public class Application {
             System.out.println(e.toString());
         }
         return null;
-    }
+    }*/
 
 
 

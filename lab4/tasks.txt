@@ -46,6 +46,11 @@ What should we do, throw exception ... if for example verifying token fails
 How many topics, code organisation?
 I would say as many topics as number of methods are there.
 
+For running.
+Run just firebase emulator which will start pub/sub.
+
+Maybe change getting keys from server. Ask them how to use asynchronous in the keys example, can I benefit something from it.
+
 
 
 

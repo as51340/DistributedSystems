@@ -38,12 +38,11 @@ import java.util.stream.Collectors;
  */
 @RestController
 public class ViewController {
+
     private final Model model;
-
     private PubSubHandler pubSubHandler;
-
-    @Autowired
-    TopicAdminClient topicAdminClient;
+    private final String bestCustomerTopicID = "bestCustomer";
+    private final String bestCustomerSchema = "bestCustomersSchema";
 
     @Autowired
     public ViewController(Model model, PubSubHandler pubSubHandler)  {
@@ -53,7 +52,7 @@ public class ViewController {
 
     @PostConstruct
     public void init() throws IOException {
-        pubSubHandler.createTopicWithSchema(topicAdminClient, "test", "testSchema");
+        pubSubHandler.createTopicWithSchema(bestCustomerTopicID, bestCustomerSchema);
     }
 
     @GetMapping("/_ah/warmup")
@@ -180,6 +179,8 @@ public class ViewController {
     public ModelAndView viewManager(
             @CookieValue(value = "cart", required = false) String cartString) throws Exception {
         // TODO: limit this function to managers
+
+        pubSubHandler.publishWithErrorHandlerExample(bestCustomerTopicID);
 
         List<Quote> quotes = Cart.fromCookie(cartString);
         ModelAndView modelAndView = new ModelAndView("manager");
