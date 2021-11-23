@@ -89,5 +89,8 @@ public class Model {
      */
     public void confirmQuotes(List<Quote> quotes, String customer) {
         // TODO: reserve all seats for the given quotes
+
+        // Put method on customer, ticket or something to reliable theatre service
+
     }
 }
