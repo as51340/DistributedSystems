@@ -42,12 +42,8 @@ public class ViewController {
 
     private final Model model;
     private final PubSubHandler pubSubHandler;
-    private final String bestCustomerTopicID = "bestCustomer";
-    private final String bestCustomerSchema = "bestCustomersSchema";
 
-    private final String confirmQuotesTopicID = "confirmQuotes";
-    private final String confirmQuotesSchema = "confirmQuotesSchema";
-    private final String confirmQuotesSubscriptionID = "confirmQuotesSubscription";
+
 
     @Autowired
     public ViewController(Model model, PubSubHandler pubSubHandler)  {
@@ -57,8 +53,7 @@ public class ViewController {
 
     @PostConstruct
     public void init() throws IOException {
-        this.pubSubHandler.createTopic(confirmQuotesTopicID);
-        this.pubSubHandler.createPushSubscriptionExample(confirmQuotesSubscriptionID, confirmQuotesTopicID);
+
     }
 
     @GetMapping("/_ah/warmup")
@@ -71,14 +66,14 @@ public class ViewController {
 
         List<Quote> quotes = Cart.fromCookie(cartString);
 
-        // TEST TEST TEST
-        Quote quote1 = new Quote("Company1", UUID.randomUUID(), UUID.randomUUID());
-        Quote quote2 = new Quote("Company2", UUID.randomUUID(), UUID.randomUUID());
-        List<Quote> test_quotes = new ArrayList<>();
-        test_quotes.add(quote1);
-        test_quotes.add(quote2);
-        ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(test_quotes, AuthController.getUser().getEmail());
-        this.pubSubHandler.publishWithErrorHandlerExample("confirmQuotes", confirmQuotesRequest);
+        /// TEST TEST TEST
+        //Quote quote1 = new Quote("Company1", UUID.randomUUID(), UUID.randomUUID());
+        //Quote quote2 = new Quote("Company2", UUID.randomUUID(), UUID.randomUUID());
+        //List<Quote> test_quotes = new ArrayList<>();
+        //test_quotes.add(quote1);
+        //test_quotes.add(quote2);
+        //ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(test_quotes, AuthController.getUser().getEmail());
+        //this.pubSubHandler.publishWithErrorHandlerExample("confirmQuotes", confirmQuotesRequest);
 
 
         ModelAndView modelAndView = new ModelAndView("shows");

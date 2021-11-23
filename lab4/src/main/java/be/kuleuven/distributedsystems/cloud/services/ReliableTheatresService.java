@@ -8,6 +8,8 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,12 +18,15 @@ import reactor.core.publisher.Mono;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
 public class ReliableTheatresService {
 
     private final String reliableTheatresURL = "https://reliabletheatrecompany.com";
+    private final String API_KEY = "wCIoTqec6vGJijW2meeqSokanZuqOL";
+
 
     @Autowired
     WebClient.Builder webClientBuilder;
@@ -34,35 +39,20 @@ public class ReliableTheatresService {
     }
 
     public List<Show> getShows() {
+        var shows = webClientBuilder.baseUrl(reliableTheatresURL)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
 
-        /**
-         * Performing blocking request
-         */
-        WebClient webClient = webClientBuilder.baseUrl(reliableTheatresURL).build();
-        //Show[] shows =  webClient.get().uri("/shows?key=wCIoTqec6vGJijW2meeqSokanZuqOL").retrieve().bodyToMono(Show[].class).block();
-        Object loc_shows = webClient.get().uri("/shows?key=wCIoTqec6vGJijW2meeqSokanZuqOL")
-                        .retrieve().bodyToMono(Object.class).block();
-
-        // String requestBody = loc_shows.toString();
-        // Gson gson = new Gson();
-        // JsonReader reader = new JsonReader(new StringReader(requestBody));
-        // reader.setLenient(true);
-        // System.out.println(requestBody);
-        // JsonParser jsonParser = new JsonParser();
-        // JsonElement jsonRoot = jsonParser.parse(requestBody);
-        // String showsStr = jsonRoot.getAsJsonObject().get("_embedded").toString();
-        // System.out.println(showsStr);
-
-        // Show[] shows = (Show[]) loc_shows.block();
-        // Object[] shows = loc_shows.block();
-
-       // System.out.println("Printing shows!");
-        //System.out.println(shows)
-        // for(Show show: shows) {
-        //     System.out.println(show.getName());
-        // }
-        //return Arrays.asList(shows);
-        return new ArrayList<>();
+                .bodyToMono(new ParameterizedTypeReference<CollectionModel<Show>>() {
+                })
+                .block()
+                .getContent();
+        return new ArrayList<>(shows);
     }
 
 }

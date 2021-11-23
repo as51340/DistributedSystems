@@ -24,6 +24,7 @@ public class APIController {
 
     private final String confirmQuotesTopicID = "confirmQuotes";
     private final String confirmQuotesSchema = "confirmQuotesSchema";
+    private final String confirmQuotesSubscriptionID = "confirmQuotesSubscription";
 
     @Autowired
     public APIController(Model model, PubSubHandler pubSubHandler) {
@@ -33,7 +34,8 @@ public class APIController {
 
     @PostConstruct
     public void init() throws IOException {
-        //pubSubHandler.createTopic(confirmQuotesTopicID);
+        this.pubSubHandler.createTopic(confirmQuotesTopicID);
+        this.pubSubHandler.createPushSubscriptionExample(confirmQuotesSubscriptionID, confirmQuotesTopicID);
     }
 
     @PostMapping(path = "/addToCart", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
@@ -69,10 +71,11 @@ public class APIController {
             @CookieValue(value = "cart", required = false) String cartString) throws Exception {
         List<Quote> cart = Cart.fromCookie(cartString);
 
-        // ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(cart, AuthController.getUser().getEmail());
+        ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(cart, AuthController.getUser().getEmail());
+        this.pubSubHandler.publishWithErrorHandlerExample(confirmQuotesTopicID, confirmQuotesRequest);
 
         // Remember this because you will need to get your email also.
-        this.model.confirmQuotes(new ArrayList<>(cart), AuthController.getUser().getEmail());
+        // this.model.confirmQuotes(new ArrayList<>(cart), AuthController.getUser().getEmail());
         cart.clear();
         ResponseCookie cookie = Cart.toCookie(cart);
         HttpHeaders headers = new HttpHeaders();
