@@ -42,12 +42,12 @@ public class PubSubController {
     }
 
     @PostMapping("/pubsub")
-    public void ConfirmQuotesHandler(HttpServletRequest request) throws IOException {
+    public ResponseEntity<Void> ConfirmQuotesHandler(HttpServletRequest request) throws IOException {
         String requestBody = request.getReader().lines().collect(Collectors.joining("\n"));
         System.out.println("Request body: " + requestBody);
         JsonElement jsonRoot = jsonParser.parse(requestBody);
         if(!this.messageIDs.add(this.getMessageId(jsonRoot))) { // because this message was already received
-            return;
+            return new ResponseEntity<>(HttpStatus.ALREADY_REPORTED);
         }
         ConfirmQuotesRequest confirmQuotesRequest = this.getData(jsonRoot);
         for(Quote quote: confirmQuotesRequest.getQuotes()) {
@@ -59,6 +59,7 @@ public class PubSubController {
             System.out.print(messageId + " ");
         }
         this.model.confirmQuotes(confirmQuotesRequest.getQuotes(), confirmQuotesRequest.getCustomer());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private Integer getMessageId(JsonElement jsonRoot) {
