@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -109,9 +110,64 @@ public class ReliableTheatresService {
                         })
                         .block())
                 .getContent();
+
+        String res = Objects.requireNonNull(webClientBuilder.baseUrl(reliableTheatresURL)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .queryParam("time", time.toString())
+                        .queryParam("available", true)
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class).block());
+
+        System.out.println("Result!!!");
+        System.out.println(res);
+
         return new ArrayList<>(times);
     }
 
+    /**
+     * @param quote
+     * @param customer
+     * @return true if everything went well, false otherwise
+     */
+    public boolean reserveSeat(Quote quote, String customer) {
+        int myStatus = 0;
+        try {
+            Seat seat = Objects.requireNonNull(webClientBuilder.baseUrl(reliableTheatresURL)
+                    .build()
+                    .put()
+                    .uri(uriBuilder -> uriBuilder
+                            .pathSegment("shows")
+                            .pathSegment(quote.getShowId().toString())
+                            .pathSegment("seats")
+                            .pathSegment(quote.getSeatId().toString())
+                            .pathSegment("ticket")
+                            .queryParam("customer", customer)
+                            .queryParam("key", API_KEY)
+                            .build())
+                    .retrieve()
+                    .onStatus(HttpStatus :: is4xxClientError,
+                            response -> Mono.error(new ServiceException("Error while trying to reserve seat" + quote.getSeatId().toString(), response.statusCode().value())))
+                    .bodyToMono(new ParameterizedTypeReference<Seat>() {
+                    })
+                    .block());
+            return true;
+        } catch(ServiceException ex) {
+            System.out.println(ex.getMessage());
+            System.out.println(ex.getStatusCode());
+            return false;
+        }
+    }
+
+
+
+    // Not used?
     public Seat getSeat(String company, UUID showId, UUID seatId) {
         return webClientBuilder.baseUrl(reliableTheatresURL)
                 .build()
@@ -128,6 +184,8 @@ public class ReliableTheatresService {
                 .block();
     }
 
+
+    // Not used?
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
         return webClientBuilder.baseUrl(reliableTheatresURL)
                 .build()

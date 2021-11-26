@@ -114,7 +114,9 @@ public class Model {
      */
     public void confirmQuotes(List<Quote> quotes, String customer) {
         // TODO: reserve all seats for the given quotes
-        // Put method on customer, ticket or something to reliable theatre service
+
+        boolean res = this.reliableTheatresService.reserveSeat(quotes.get(0), customer);
+        System.out.println("Result from confirming quote: " + res);
     }
 
 }

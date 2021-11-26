@@ -15,6 +15,7 @@
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/ViewController.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/User.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/Application.java
+/home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/services/ServiceException.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/Seat.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/Model.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/APIController.java

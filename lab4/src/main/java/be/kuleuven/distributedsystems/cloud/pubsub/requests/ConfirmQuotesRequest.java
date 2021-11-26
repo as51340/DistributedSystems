@@ -6,10 +6,8 @@ import org.eclipse.jetty.websocket.jsr356.EncoderFactory;
 
 import java.beans.Encoder;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
 
@@ -100,6 +98,8 @@ public class ConfirmQuotesRequest implements PubSubRequest, Serializable {
             System.out.println(quote.getCompany());
         }
         System.out.println("Customer: " + confirmQuotesRequest.customer);
+
+
 
 
     }
