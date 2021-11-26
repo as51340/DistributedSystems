@@ -18,15 +18,15 @@ import java.util.*;
 @Service
 public class TheatreService {
 
+    @Autowired
+    WebClient.Builder webClientBuilder;
+
     private final String reliableTheatreURL = "https://reliabletheatrecompany.com";
     private final String unreliableTheatreURL = "https://unreliabletheatrecompany.com";
 
     private final List<String> URLs = new ArrayList<>();
     private final String API_KEY = "wCIoTqec6vGJijW2meeqSokanZuqOL";
 
-
-    @Autowired
-    WebClient.Builder webClientBuilder;
 
     /**
      * Dependency injection
@@ -74,7 +74,7 @@ public class TheatreService {
     }
 
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
-        var times = Objects.requireNonNull(webClientBuilder.baseUrl(company)
+        var times = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
                         .build()
                         .get()
                         .uri(uriBuilder -> uriBuilder
@@ -93,7 +93,7 @@ public class TheatreService {
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        var times = Objects.requireNonNull(webClientBuilder.baseUrl(company)
+        var times = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
                         .build()
                         .get()
                         .uri(uriBuilder -> uriBuilder
@@ -111,22 +111,22 @@ public class TheatreService {
                         .block())
                 .getContent();
 
-        String res = Objects.requireNonNull(webClientBuilder.baseUrl(company)
-                .build()
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .pathSegment("shows")
-                        .pathSegment(showId.toString())
-                        .pathSegment("seats")
-                        .queryParam("time", time.toString())
-                        .queryParam("available", true)
-                        .queryParam("key", API_KEY)
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class).block());
-
-        System.out.println("Result!!!");
-        System.out.println(res);
+        // String res = Objects.requireNonNull(webClientBuilder.baseUrl(company)
+        //         .build()
+        //         .get()
+        //         .uri(uriBuilder -> uriBuilder
+        //                 .pathSegment("shows")
+        //                 .pathSegment(showId.toString())
+        //                 .pathSegment("seats")
+        //                 .queryParam("time", time.toString())
+        //                 .queryParam("available", true)
+        //                 .queryParam("key", API_KEY)
+        //                 .build())
+        //         .retrieve()
+        //         .bodyToMono(String.class).block());
+        //
+        // System.out.println("Result!!!");
+        // System.out.println(res);
 
         return new ArrayList<>(times);
     }
