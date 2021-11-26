@@ -57,7 +57,11 @@ public class Model {
      * @return
      */
     public List<Booking> getBookings(String customer) {
-        return this.customerBookings.get(customer);
+        var bookings = this.customerBookings.get(customer);
+        if(bookings == null) {
+            return new ArrayList<>();
+        }
+        return bookings;
     }
 
     /**

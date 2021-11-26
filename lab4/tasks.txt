@@ -60,7 +60,7 @@ Questions:
 Ask about schema
 
 
-
+handling null pointer exception
 
 
 

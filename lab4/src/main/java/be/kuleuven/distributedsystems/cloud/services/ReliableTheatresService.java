@@ -78,7 +78,7 @@ public class ReliableTheatresService {
                         .get()
                         .uri(uriBuilder -> uriBuilder
                                 .pathSegment("shows")
-                                .pathSegment("/" + showId)
+                                .pathSegment(showId.toString())
                                 .pathSegment("/times")
                                 .queryParam("key", API_KEY)
                                 .build())
@@ -97,10 +97,10 @@ public class ReliableTheatresService {
                         .get()
                         .uri(uriBuilder -> uriBuilder
                                 .pathSegment("shows")
-                                .pathSegment("/" + showId)
-                                .pathSegment("/seats?time=")
-                                .pathSegment(time.toString())
-                                .pathSegment("&available=true")
+                                .pathSegment(showId.toString())
+                                .pathSegment("seats")
+                                .queryParam("time", time.toString())
+                                .queryParam("available", true)
                                 .queryParam("key", API_KEY)
                                 .build())
                         .retrieve()

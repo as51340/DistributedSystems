@@ -169,6 +169,7 @@ public class ViewController {
 
         var shows = new HashMap<UUID, Show>();
         var seats = new HashMap<UUID, Seat>();
+
         for (var b : bookings) {
             for (var t : b.getTickets()) {
                 if (!shows.containsKey(t.getShowId())) {
@@ -179,6 +180,7 @@ public class ViewController {
                 }
             }
         }
+
 
         modelAndView.addObject("bookings", bookings);
         modelAndView.addObject("seats", seats);
