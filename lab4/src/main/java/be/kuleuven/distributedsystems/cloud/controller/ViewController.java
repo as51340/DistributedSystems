@@ -80,7 +80,8 @@ public class ViewController {
         modelAndView.addObject("cartLength",
                 Integer.toString(quotes.size()));
         modelAndView.addObject("manager", AuthController.getUser().isManager());
-        modelAndView.addObject("shows", this.model.getShows());
+        List<Show> shows = this.model.getShows();
+        modelAndView.addObject("shows", shows);
         return modelAndView;
     }
 
@@ -176,7 +177,14 @@ public class ViewController {
                     shows.put(t.getShowId(), this.model.getShow(t.getCompany(), t.getShowId()));
                 }
                 if (!seats.containsKey(t.getSeatId())) {
-                    seats.put(t.getSeatId(), this.model.getSeat(t.getCompany(), t.getShowId(), t.getSeatId()));
+                    System.out.println("Calling get seat");
+                    Seat seat = this.model.getSeat(t.getCompany(), t.getShowId(), t.getSeatId());
+                    System.out.println("Seat id: " + seat.getSeatId().toString() );
+                    System.out.println("Seat name: " + seat.getName());
+                    System.out.println("Company: " + seat.getCompany() );
+                    System.out.println("Seat price: " + seat.getPrice());
+                    System.out.println("Show: " + seat.getShowId().toString());
+                    seats.put(t.getSeatId(), seat);
                 }
             }
         }

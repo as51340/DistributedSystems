@@ -44,6 +44,10 @@ public class APIController {
             @RequestHeader(value = "referer") String referer,
             @CookieValue(value = "cart", required = false) String cartString) {
         List<Quote> cart = Cart.fromCookie(cartString);
+        System.out.println("Add to cart properties");
+        System.out.println("Company: " + quote.getCompany());
+        System.out.println("Seat ID: " + quote.getSeatId().toString());
+        System.out.println("Show ID: " + quote.getShowId().toString());
         cart.add(quote);
         ResponseCookie cookie = Cart.toCookie(cart);
         HttpHeaders headers = new HttpHeaders();

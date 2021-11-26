@@ -14,7 +14,7 @@
            Please set the following parameter for the filename
            for the final zip to `cloud-[1 or 2].[firstname].[lastname]`.
         ************************************************************* -->
-        <zip.filename>cloud-ADDLEVEL.ADDFIRSTNAME.ADDLASTNAME</zip.filename>
+        <zip.filename>cloud-01.Andi.Skrgat</zip.filename>
 
         <java.version>11</java.version>
         <maven.compiler.target>11</maven.compiler.target>

@@ -2,7 +2,10 @@ package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
+import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import be.kuleuven.distributedsystems.cloud.services.TheatreService;
+import ch.qos.logback.core.net.SyslogOutputStream;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -15,34 +18,98 @@ public class Model {
 
     private Map<String, List<Booking>> customerBookings = new HashMap<>();
 
+    private static final int repeat = 5;
+
     // TODO Do we need pubsubhandler here?
     public Model(TheatreService theatreService) {
         this.theatreService = theatreService;
     }
 
     public List<Show> getShows() {
-        return this.theatreService.getShows();
+        List<Show> shows = null;
+        for(int i = 0; i < repeat; i++) {
+            try {
+               shows = this.theatreService.getShows();
+               break;
+            } catch(ServiceException ex) {
+                System.err.println("Shows: " + shows);
+            }
+        }
+        if(shows == null) {
+            return new ArrayList<>();
+        }
+        return shows;
     }
 
     public Show getShow(String company, UUID showId) {
-        return this.theatreService.getShow(company, showId);
+        Show show = null;
+        for(int i = 0; i < repeat; i++) {
+            try {
+                show = this.theatreService.getShow(company, showId);
+            } catch(ServiceException ex) {
+                System.err.println("Trying to fetch show: " + showId.toString());
+            }
+        }
+        return show;
     }
 
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
-        return this.theatreService.getShowTimes(company, showId);
+        List<LocalDateTime> times = null;
+        for(int i = 0; i < repeat; i++) {
+            try {
+                times = this.theatreService.getShowTimes(company, showId);
+                break;
+            } catch(ServiceException ex) {
+                // just continue
+                System.err.println("Times: " + times);
+            }
+        }
+        if(times == null) {
+            return new ArrayList<>();
+        }
+        return times;
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        System.out.println("time=" + time.toString());
-        return this.theatreService.getAvailableSeats(company, showId, time);
+        List<Seat> seats = null;
+        for(int i = 0; i < repeat; i++) {
+            try {
+                seats = this.theatreService.getAvailableSeats(company, showId, time);
+                break;
+            } catch(ServiceException ex) {
+                System.err.println("Seats: " + seats);
+            }
+        }
+        if(seats == null) {
+            return new ArrayList<>();
+        }
+        return seats;
     }
 
     public Seat getSeat(String company, UUID showId, UUID seatId) {
-        return this.theatreService.getSeat(company, showId,seatId);
+       Seat seat = null;
+        for(int i = 0; i < repeat; i++) {
+            try {
+                seat = this.theatreService.getSeat(company, showId, seatId);
+                break;
+            } catch(ServiceException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        return seat;
     }
 
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        return this.theatreService.getTicket(company, showId,seatId);
+        Ticket ticket = null;
+        for(int i = 0; i < repeat; i++) {
+            try {
+                ticket = this.theatreService.getTicket(company, showId, seatId);
+                break;
+            } catch(ServiceException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        return ticket;
     }
 
     /**
@@ -108,9 +175,43 @@ public class Model {
      */
     public void confirmQuotes(List<Quote> quotes, String customer) {
         // TODO: reserve all seats for the given quotes
+        // Create a booking.
+        // There is possibility that we reserved one ticket but cannot reserve some other ticket even after 5 repeats.
+        int cnt = 0;
+        List<Ticket> tickets = new ArrayList<>();
+        for(Quote quote: quotes) {
+            boolean reserved = false;
+            for(int i = 0; i < repeat; i++) {
+                try {
+                    Seat currSeat = this.theatreService.reserveSeat(quote, customer);
 
-        boolean res = this.theatreService.reserveSeat(quotes.get(0), customer);
-        System.out.println("Result from confirming quote: " + res);
+                    reserved = true;
+                    Ticket currentTicket = new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), UUID.randomUUID(), customer);
+                    System.out.println("New ticket: " + currentTicket.getTicketId().toString());
+                    System.out.println("New seat: " + quote.getSeatId().toString());
+                    tickets.add(currentTicket);
+                    break;
+                } catch(ServiceException ex) {
+                    System.err.println("Seat cannot be reserved: " + quote.getSeatId());
+                }
+            }
+            if(reserved) {
+                cnt += 1;
+            } else {
+                // Do not continue
+                break;
+            }
+        }
+        if(cnt == quotes.size()) {
+            System.out.println("All seats successfully reserved!");
+            Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
+            if(this.customerBookings.get(customer) == null) {
+                this.customerBookings.put(customer, new ArrayList<>());
+            }
+            this.customerBookings.get(customer).add(booking);
+        } else {
+            System.err.println("Error happened while reserving seats.");
+        }
     }
 
 }

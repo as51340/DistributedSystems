@@ -4,6 +4,7 @@ import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
+import io.netty.handler.ssl.SslContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
@@ -47,7 +48,8 @@ public class TheatreService {
                             .queryParam("key", API_KEY)
                             .build())
                     .retrieve()
-
+                    .onStatus(HttpStatus :: isError,
+                    response -> Mono.error(new ServiceException("Error while trying to fetch shows", response.statusCode().value())))
                     .bodyToMono(new ParameterizedTypeReference<CollectionModel<Show>>() {
                     })
                     .block()
@@ -58,21 +60,23 @@ public class TheatreService {
     }
 
     public Show getShow(String company, UUID showId) {
-        return webClientBuilder.baseUrl(company)
+        return webClientBuilder.baseUrl("https://" + company)
                 .build()
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .pathSegment("shows")
-                        .pathSegment("/" + showId)
+                        .pathSegment(showId.toString())
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
-
+                .onStatus(HttpStatus :: isError,
+                        response -> Mono.error(new ServiceException("Error while trying to fetch show " + showId.toString(), response.statusCode().value())))
                 .bodyToMono(new ParameterizedTypeReference<Show>() {
                 })
                 .block();
     }
 
+    // Correct this
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
         var times = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
                         .build()
@@ -84,7 +88,8 @@ public class TheatreService {
                                 .queryParam("key", API_KEY)
                                 .build())
                         .retrieve()
-
+                        .onStatus(HttpStatus :: isError,
+                                response -> Mono.error(new ServiceException("Error while trying to fetch show times", response.statusCode().value())))
                         .bodyToMono(new ParameterizedTypeReference<CollectionModel<LocalDateTime>>() {
                         })
                         .block())
@@ -92,8 +97,26 @@ public class TheatreService {
         return new ArrayList<>(times);
     }
 
+    public Seat getSeat(String company, UUID showId, UUID seatId) {
+        return webClientBuilder.baseUrl("https://" + company)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .pathSegment(seatId.toString())
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .onStatus(HttpStatus :: isError,
+                        response -> Mono.error(new ServiceException("Error while trying to fetch seat " + seatId.toString(), response.statusCode().value())))
+                .bodyToMono(new ParameterizedTypeReference<Seat>() {
+                })
+                .block();
+    }
+
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-<<<<<<< HEAD
         var times = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
                         .build()
                         .get()
@@ -106,74 +129,14 @@ public class TheatreService {
                                 .queryParam("key", API_KEY)
                                 .build())
                         .retrieve()
-
+                        .onStatus(HttpStatus :: isError,
+                                response -> Mono.error(new ServiceException("Error while trying to fetch available seats", response.statusCode().value())))
                         .bodyToMono(new ParameterizedTypeReference<CollectionModel<Seat>>() {
                         })
                         .block())
                 .getContent();
 
-        // String res = Objects.requireNonNull(webClientBuilder.baseUrl(company)
-        //         .build()
-        //         .get()
-        //         .uri(uriBuilder -> uriBuilder
-        //                 .pathSegment("shows")
-        //                 .pathSegment(showId.toString())
-        //                 .pathSegment("seats")
-        //                 .queryParam("time", time.toString())
-        //                 .queryParam("available", true)
-        //                 .queryParam("key", API_KEY)
-        //                 .build())
-        //         .retrieve()
-        //         .bodyToMono(String.class).block());
-        //
-        // System.out.println("Result!!!");
-        // System.out.println(res);
-=======
-        try {
-            var times = Objects.requireNonNull(webClientBuilder.baseUrl(company)
-                            .build()
-                            .get()
-                            .uri(uriBuilder -> uriBuilder
-                                    .pathSegment("shows")
-                                    .pathSegment(showId.toString())
-                                    .pathSegment("seats")
-                                    .queryParam("time", time.toString())
-                                    .queryParam("available", true)
-                                    .queryParam("key", API_KEY)
-                                    .build())
-                            .retrieve()
-
-                            .bodyToMono(new ParameterizedTypeReference<CollectionModel<Seat>>() {
-                            })
-                            .block())
-                    .getContent();
-
-            String res = Objects.requireNonNull(webClientBuilder.baseUrl(company)
-                    .build()
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .pathSegment("shows")
-                            .pathSegment(showId.toString())
-                            .pathSegment("seats")
-                            .queryParam("time", time.toString())
-                            .queryParam("available", true)
-                            .queryParam("key", API_KEY)
-                            .build())
-                    .retrieve()
-                    .onStatus(HttpStatus :: is4xxClientError,
-                            response -> Mono.error(new ServiceException("Error while trying to get available seats", response.statusCode().value())))
-                    .bodyToMono(String.class).block());
-
-            System.out.println("Result!!!");
-            System.out.println(res);
->>>>>>> 71bc78387522c95b243eb8fc3e6dc97dfb7f1cad
-
             return new ArrayList<>(times);
-        } catch(ServiceException ex) {
-            System.out.println(ex.getMessage());
-            System.out.println(ex.getStatusCode());
-            return null;
-        }
     }
 
     /**
@@ -182,64 +145,44 @@ public class TheatreService {
      * @return true if everything went well, false otherwise
      */
 
-    // TODO How to reserve seat for specific company, do we even need baseUrl
-    public boolean reserveSeat(Quote quote, String customer) {
-        int myStatus = 0;
-        try {
-            Seat seat = Objects.requireNonNull(webClientBuilder.baseUrl(quote.getCompany())
-                    .build()
-                    .put()
-                    .uri(uriBuilder -> uriBuilder
-                            .pathSegment("shows")
-                            .pathSegment(quote.getShowId().toString())
-                            .pathSegment("seats")
-                            .pathSegment(quote.getSeatId().toString())
-                            .pathSegment("ticket")
-                            .queryParam("customer", customer)
-                            .queryParam("key", API_KEY)
-                            .build())
-                    .retrieve()
-                    .onStatus(HttpStatus :: is4xxClientError,
-                            response -> Mono.error(new ServiceException("Error while trying to reserve seat" + quote.getSeatId().toString(), response.statusCode().value())))
-                    .bodyToMono(new ParameterizedTypeReference<Seat>() {
-                    })
-                    .block());
-            return true;
-        } catch(ServiceException ex) {
-            System.out.println(ex.getMessage());
-            System.out.println(ex.getStatusCode());
-            return false;
-        }
+    public Seat reserveSeat(Quote quote, String customer) {
+        Seat seat = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + quote.getCompany())
+                .build()
+                .put()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(quote.getShowId().toString())
+                        .pathSegment("seats")
+                        .pathSegment(quote.getSeatId().toString())
+                        .pathSegment("ticket")
+                        .queryParam("customer", customer)
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .onStatus(HttpStatus :: isError,
+                        response -> Mono.error(new ServiceException("Error while trying to reserve seat" +
+                                quote.getSeatId().toString(), response.statusCode().value())))
+                .bodyToMono(new ParameterizedTypeReference<Seat>() {
+                })
+                .block());
+
+        this.getTicket(quote.getCompany(), quote.getShowId(), quote.getSeatId());
+        System.out.println("Temp ticket properties if any");
+
+        //System.out.println("Company: " + tempTicket.getCompany());
+        return seat;
     }
 
-
-
-    // Not used?
-    public Seat getSeat(String company, UUID showId, UUID seatId) {
-        return webClientBuilder.baseUrl(company)
+    public Ticket getTicket(String company, UUID showId, UUID seatId) {
+       return webClientBuilder.baseUrl(company)
                 .build()
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .pathSegment("shows")
-                        .pathSegment("/" + showId)
-                        .queryParam("key", API_KEY)
-                        .build())
-                .retrieve()
-
-                .bodyToMono(new ParameterizedTypeReference<Seat>() {
-                })
-                .block();
-    }
-
-
-    // Not used?
-    public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        return webClientBuilder.baseUrl(company)
-                .build()
-                .get()
-                .uri(uriBuilder -> uriBuilder
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .pathSegment(seatId.toString())
                         .pathSegment("ticket")
-                        .pathSegment("/" + showId)
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
