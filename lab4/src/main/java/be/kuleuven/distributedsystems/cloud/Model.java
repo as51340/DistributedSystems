@@ -2,53 +2,47 @@ package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
-import be.kuleuven.distributedsystems.cloud.services.ReliableTheatresService;
-import com.google.pubsub.v1.Encoding;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.security.core.parameters.P;
+import be.kuleuven.distributedsystems.cloud.services.TheatreService;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
 public class Model {
 
-    private ReliableTheatresService reliableTheatresService = null;
+    private TheatreService theatreService = null;
 
     private Map<String, List<Booking>> customerBookings = new HashMap<>();
 
-    public Model(ReliableTheatresService reliableTheatresService, PubSubHandler pubSubHandler) {
-        this.reliableTheatresService = reliableTheatresService;
+    // TODO Do we need pubsubhandler here?
+    public Model(TheatreService theatreService, PubSubHandler pubSubHandler) {
+        this.theatreService = theatreService;
     }
 
     public List<Show> getShows() {
-        return this.reliableTheatresService.getShows();
+        return this.theatreService.getShows();
     }
 
     public Show getShow(String company, UUID showId) {
-        return this.reliableTheatresService.getShow(company, showId);
+        return this.theatreService.getShow(company, showId);
     }
 
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
-        return this.reliableTheatresService.getShowTimes(company, showId);
+        return this.theatreService.getShowTimes(company, showId);
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
         System.out.println("time=" + time.toString());
-        return this.reliableTheatresService.getAvailableSeats(company, showId, time);
+        return this.theatreService.getAvailableSeats(company, showId, time);
     }
 
     public Seat getSeat(String company, UUID showId, UUID seatId) {
-        return this.reliableTheatresService.getSeat(company, showId,seatId);
+        return this.theatreService.getSeat(company, showId,seatId);
     }
 
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        return this.reliableTheatresService.getTicket(company, showId,seatId);
+        return this.theatreService.getTicket(company, showId,seatId);
     }
 
     /**
@@ -115,7 +109,7 @@ public class Model {
     public void confirmQuotes(List<Quote> quotes, String customer) {
         // TODO: reserve all seats for the given quotes
 
-        boolean res = this.reliableTheatresService.reserveSeat(quotes.get(0), customer);
+        boolean res = this.theatreService.reserveSeat(quotes.get(0), customer);
         System.out.println("Result from confirming quote: " + res);
     }
 
