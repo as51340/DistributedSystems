@@ -58,3 +58,38 @@ Questions:
 7. Can indirect communication be slower, I mean what are some potential usability problems?
 8. What would mean total failure of booking platform - is it enough to try/catch error
 Ask about schema
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

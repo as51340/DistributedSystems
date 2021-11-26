@@ -20,6 +20,8 @@ public class Model {
 
     private ReliableTheatresService reliableTheatresService = null;
 
+    private Map<String, List<Booking>> customerBookings = new HashMap<>();
+
     public Model(ReliableTheatresService reliableTheatresService, PubSubHandler pubSubHandler) {
         this.reliableTheatresService = reliableTheatresService;
     }
@@ -37,6 +39,7 @@ public class Model {
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
+        System.out.println("time=" + time.toString());
         return this.reliableTheatresService.getAvailableSeats(company, showId, time);
     }
 
@@ -54,8 +57,7 @@ public class Model {
      * @return
      */
     public List<Booking> getBookings(String customer) {
-        // TODO: return all bookings from the customer
-        return new ArrayList<>();
+        return this.customerBookings.get(customer);
     }
 
     /**
@@ -63,8 +65,11 @@ public class Model {
      * @return
      */
     public List<Booking> getAllBookings() {
-        // TODO: return all bookings
-        return new ArrayList<>();
+        List<Booking> allBookings = new ArrayList<>();
+        for(String customer: this.customerBookings.keySet()) {
+            allBookings.addAll(this.customerBookings.get(customer));
+        }
+        return allBookings;
     }
 
     /**
@@ -72,8 +77,30 @@ public class Model {
      * @return
      */
     public Set<String> getBestCustomers() {
-        // TODO: return the best customer (highest number of tickets, return all of them if multiple customers have an equal amount)
-        return null;
+        Set<String> bestCustomers = new HashSet<>();
+        int maxTickets = 0;
+        // Find max num of tickets
+        for(String customer: this.customerBookings.keySet()) {
+            List<Booking> currBookings = this.customerBookings.get(customer);
+            int currentTickets = 0;
+            for(Booking booking: currBookings) {
+                currentTickets += booking.getTickets().size();
+            }
+            if(currentTickets > maxTickets) {
+                maxTickets = currentTickets;
+            }
+        }
+        for(String customer: this.customerBookings.keySet()) {
+            int currentTickets = 0;
+            List<Booking> currBookings = this.customerBookings.get(customer);
+            for(Booking booking: currBookings) {
+                currentTickets += booking.getTickets().size();
+            }
+            if(currentTickets == maxTickets) {
+                bestCustomers.add(customer);
+            }
+        }
+        return bestCustomers;
     }
 
     /**
@@ -85,4 +112,5 @@ public class Model {
         // TODO: reserve all seats for the given quotes
         // Put method on customer, ticket or something to reliable theatre service
     }
+
 }
