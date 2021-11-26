@@ -1,7 +1,9 @@
 package be.kuleuven.distributedsystems.cloud.services;
 
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
+import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
+import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -17,9 +19,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class ReliableTheatresService {
@@ -55,4 +56,91 @@ public class ReliableTheatresService {
         return new ArrayList<>(shows);
     }
 
+    public Show getShow(String company, UUID showId) {
+        return webClientBuilder.baseUrl(reliableTheatresURL)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment("/" + showId)
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+
+                .bodyToMono(new ParameterizedTypeReference<Show>() {
+                })
+                .block();
+    }
+
+    public List<LocalDateTime> getShowTimes(String company, UUID showId) {
+        var times = Objects.requireNonNull(webClientBuilder.baseUrl(reliableTheatresURL)
+                        .build()
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                                .pathSegment("shows")
+                                .pathSegment("/" + showId)
+                                .pathSegment("/times")
+                                .queryParam("key", API_KEY)
+                                .build())
+                        .retrieve()
+
+                        .bodyToMono(new ParameterizedTypeReference<CollectionModel<LocalDateTime>>() {
+                        })
+                        .block())
+                .getContent();
+        return new ArrayList<>(times);
+    }
+
+    public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
+        var times = Objects.requireNonNull(webClientBuilder.baseUrl(reliableTheatresURL)
+                        .build()
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                                .pathSegment("shows")
+                                .pathSegment("/" + showId)
+                                .pathSegment("/seats?time=")
+                                .pathSegment(time.toString())
+                                .pathSegment("&available=true")
+                                .queryParam("key", API_KEY)
+                                .build())
+                        .retrieve()
+
+                        .bodyToMono(new ParameterizedTypeReference<CollectionModel<Seat>>() {
+                        })
+                        .block())
+                .getContent();
+        return new ArrayList<>(times);
+    }
+
+    public Seat getSeat(String company, UUID showId, UUID seatId) {
+        return webClientBuilder.baseUrl(reliableTheatresURL)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment("/" + showId)
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+
+                .bodyToMono(new ParameterizedTypeReference<Seat>() {
+                })
+                .block();
+    }
+
+    public Ticket getTicket(String company, UUID showId, UUID seatId) {
+        return webClientBuilder.baseUrl(reliableTheatresURL)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("ticket")
+                        .pathSegment("/" + showId)
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+
+                .bodyToMono(new ParameterizedTypeReference<Ticket>() {
+                })
+                .block();
+    }
 }

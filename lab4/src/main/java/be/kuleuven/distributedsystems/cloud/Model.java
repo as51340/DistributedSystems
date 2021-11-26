@@ -29,28 +29,23 @@ public class Model {
     }
 
     public Show getShow(String company, UUID showId) {
-        // TODO: return the given show
-        return null;
+        return this.reliableTheatresService.getShow(company, showId);
     }
 
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
-        // TODO: return a list with all possible times for the given show
-        return new ArrayList<>();
+        return this.reliableTheatresService.getShowTimes(company, showId);
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        // TODO: return all available seats for a given show and time
-        return new ArrayList<>();
+        return this.reliableTheatresService.getAvailableSeats(company, showId, time);
     }
 
     public Seat getSeat(String company, UUID showId, UUID seatId) {
-        // TODO: return the given seat
-        return null;
+        return this.reliableTheatresService.getSeat(company, showId,seatId);
     }
 
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        // TODO: return the ticket for the given seat
-        return null;
+        return this.reliableTheatresService.getTicket(company, showId,seatId);
     }
 
     /**
