@@ -93,42 +93,50 @@ public class TheatreService {
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        var times = Objects.requireNonNull(webClientBuilder.baseUrl(company)
-                        .build()
-                        .get()
-                        .uri(uriBuilder -> uriBuilder
-                                .pathSegment("shows")
-                                .pathSegment(showId.toString())
-                                .pathSegment("seats")
-                                .queryParam("time", time.toString())
-                                .queryParam("available", true)
-                                .queryParam("key", API_KEY)
-                                .build())
-                        .retrieve()
+        try {
+            var times = Objects.requireNonNull(webClientBuilder.baseUrl(company)
+                            .build()
+                            .get()
+                            .uri(uriBuilder -> uriBuilder
+                                    .pathSegment("shows")
+                                    .pathSegment(showId.toString())
+                                    .pathSegment("seats")
+                                    .queryParam("time", time.toString())
+                                    .queryParam("available", true)
+                                    .queryParam("key", API_KEY)
+                                    .build())
+                            .retrieve()
 
-                        .bodyToMono(new ParameterizedTypeReference<CollectionModel<Seat>>() {
-                        })
-                        .block())
-                .getContent();
+                            .bodyToMono(new ParameterizedTypeReference<CollectionModel<Seat>>() {
+                            })
+                            .block())
+                    .getContent();
 
-        String res = Objects.requireNonNull(webClientBuilder.baseUrl(company)
-                .build()
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .pathSegment("shows")
-                        .pathSegment(showId.toString())
-                        .pathSegment("seats")
-                        .queryParam("time", time.toString())
-                        .queryParam("available", true)
-                        .queryParam("key", API_KEY)
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class).block());
+            String res = Objects.requireNonNull(webClientBuilder.baseUrl(company)
+                    .build()
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .pathSegment("shows")
+                            .pathSegment(showId.toString())
+                            .pathSegment("seats")
+                            .queryParam("time", time.toString())
+                            .queryParam("available", true)
+                            .queryParam("key", API_KEY)
+                            .build())
+                    .retrieve()
+                    .onStatus(HttpStatus :: is4xxClientError,
+                            response -> Mono.error(new ServiceException("Error while trying to get available seats", response.statusCode().value())))
+                    .bodyToMono(String.class).block());
 
-        System.out.println("Result!!!");
-        System.out.println(res);
+            System.out.println("Result!!!");
+            System.out.println(res);
 
-        return new ArrayList<>(times);
+            return new ArrayList<>(times);
+        } catch(ServiceException ex) {
+            System.out.println(ex.getMessage());
+            System.out.println(ex.getStatusCode());
+            return null;
+        }
     }
 
     /**
@@ -141,7 +149,7 @@ public class TheatreService {
     public boolean reserveSeat(Quote quote, String customer) {
         int myStatus = 0;
         try {
-            Seat seat = Objects.requireNonNull(webClientBuilder.baseUrl(reliableTheatreURL)
+            Seat seat = Objects.requireNonNull(webClientBuilder.baseUrl(quote.getCompany())
                     .build()
                     .put()
                     .uri(uriBuilder -> uriBuilder

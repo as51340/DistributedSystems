@@ -16,7 +16,7 @@ public class Model {
     private Map<String, List<Booking>> customerBookings = new HashMap<>();
 
     // TODO Do we need pubsubhandler here?
-    public Model(TheatreService theatreService, PubSubHandler pubSubHandler) {
+    public Model(TheatreService theatreService) {
         this.theatreService = theatreService;
     }
 
