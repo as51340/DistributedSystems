@@ -20,7 +20,6 @@ public class Model {
 
     private static final int repeat = 5;
 
-    // TODO Do we need pubsubhandler here?
     public Model(TheatreService theatreService) {
         this.theatreService = theatreService;
     }
@@ -183,10 +182,8 @@ public class Model {
             boolean reserved = false;
             for(int i = 0; i < repeat; i++) {
                 try {
-                    Seat currSeat = this.theatreService.reserveSeat(quote, customer);
-
+                    Ticket currentTicket = this.theatreService.putTicket(quote, customer);
                     reserved = true;
-                    Ticket currentTicket = new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), UUID.randomUUID(), customer);
                     System.out.println("New ticket: " + currentTicket.getTicketId().toString());
                     System.out.println("New seat: " + quote.getSeatId().toString());
                     tickets.add(currentTicket);
@@ -210,6 +207,7 @@ public class Model {
             }
             this.customerBookings.get(customer).add(booking);
         } else {
+            // TODO delete already reserved tickets
             System.err.println("Error happened while reserving seats.");
         }
     }

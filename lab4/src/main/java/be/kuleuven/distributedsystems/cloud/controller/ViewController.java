@@ -66,16 +66,6 @@ public class ViewController {
 
         List<Quote> quotes = Cart.fromCookie(cartString);
 
-        /// TEST TEST TEST
-        //Quote quote1 = new Quote("Company1", UUID.randomUUID(), UUID.randomUUID());
-        //Quote quote2 = new Quote("Company2", UUID.randomUUID(), UUID.randomUUID());
-        //List<Quote> test_quotes = new ArrayList<>();
-        //test_quotes.add(quote1);
-        //test_quotes.add(quote2);
-        //ConfirmQuotesRequest confirmQuotesRequest = new ConfirmQuotesRequest(test_quotes, AuthController.getUser().getEmail());
-        //this.pubSubHandler.publishWithErrorHandlerExample("confirmQuotes", confirmQuotesRequest);
-
-
         ModelAndView modelAndView = new ModelAndView("shows");
         modelAndView.addObject("cartLength",
                 Integer.toString(quotes.size()));

@@ -2,27 +2,18 @@ package be.kuleuven.distributedsystems.cloud.controller;
 
 import be.kuleuven.distributedsystems.cloud.Model;
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
-import be.kuleuven.distributedsystems.cloud.pubsub.Message;
 import be.kuleuven.distributedsystems.cloud.pubsub.requests.ConfirmQuotesRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.protobuf.ByteString;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,7 +35,7 @@ public class PubSubController {
     @PostMapping("/pubsub")
     public ResponseEntity<Void> ConfirmQuotesHandler(HttpServletRequest request) throws IOException {
         String requestBody = request.getReader().lines().collect(Collectors.joining("\n"));
-        System.out.println("Request body: " + requestBody);
+        // System.out.println("Request body: " + requestBody);
         JsonElement jsonRoot = jsonParser.parse(requestBody);
         if(!this.messageIDs.add(this.getMessageId(jsonRoot))) { // because this message was already received
             return new ResponseEntity<>(HttpStatus.ALREADY_REPORTED);
@@ -58,6 +49,7 @@ public class PubSubController {
         for(Integer messageId: this.messageIDs) {
             System.out.print(messageId + " ");
         }
+        System.out.println();
         this.model.confirmQuotes(confirmQuotesRequest.getQuotes(), confirmQuotesRequest.getCustomer());
         return new ResponseEntity<>(HttpStatus.OK);
     }

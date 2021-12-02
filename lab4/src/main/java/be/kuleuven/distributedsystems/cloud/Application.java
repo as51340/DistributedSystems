@@ -5,6 +5,7 @@ import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.pubsub.v1.PushConfig;
@@ -56,7 +57,7 @@ public class Application {
 
     @Bean
     public String projectId() {
-        return "demo-distributed-systems-kul";
+        return "ds-theatres";
     }
 
     @Bean
@@ -66,6 +67,7 @@ public class Application {
 
     @Bean
     public TransportChannelProvider channelProvider() {
+        // to do - if isProduction then change
         String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
         System.out.println("Hostport: " + hostport);
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
@@ -75,8 +77,12 @@ public class Application {
     }
 
     @Bean
-    public PushConfig pushConfig() {
-        return PushConfig.newBuilder().setPushEndpoint("http://localhost:8080/pubsub").build();
+    public String pubSubEndpoint() {
+        if(!isProduction()) {
+            return "http://localhost:8080/pubsub";
+        } else {
+            return null;
+        }
     }
 
     /*

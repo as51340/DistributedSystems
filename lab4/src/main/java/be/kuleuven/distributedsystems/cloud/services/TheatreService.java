@@ -117,7 +117,7 @@ public class TheatreService {
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        var times = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
+        var seats = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
                         .build()
                         .get()
                         .uri(uriBuilder -> uriBuilder
@@ -136,17 +136,62 @@ public class TheatreService {
                         .block())
                 .getContent();
 
-            return new ArrayList<>(times);
+        String res = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .queryParam("time", time.toString())
+                        .queryParam("available", true)
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class).block());
+
+        System.out.println("Result!!!");
+        System.out.println(res);
+
+        return new ArrayList<>(seats);
     }
 
     /**
+     * Returns ticket for given seat and show
+     * @param company
+     * @param showId
+     * @param seatId
+     * @return
+     */
+    public Ticket getTicket(String company, UUID showId, UUID seatId) {
+        return Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .pathSegment(seatId.toString())
+                        .pathSegment("ticket")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .onStatus(HttpStatus :: isError,
+                        response -> Mono.error(new ServiceException("Error while trying to fetch ticket for show: " + showId.toString() + " seat: " + seatId.toString(),
+                                response.statusCode().value())))
+                .bodyToMono(new ParameterizedTypeReference<Ticket>() {
+                })
+                .block());
+    }
+
+    /**
+     * Reserves seat and API returns ticket as result.
      * @param quote
      * @param customer
-     * @return true if everything went well, false otherwise
+     * @return
      */
-
-    public Seat reserveSeat(Quote quote, String customer) {
-        Seat seat = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + quote.getCompany())
+    public Ticket putTicket(Quote quote, String customer) {
+        return Objects.requireNonNull(webClientBuilder.baseUrl("https://" + quote.getCompany())
                 .build()
                 .put()
                 .uri(uriBuilder -> uriBuilder
@@ -162,33 +207,35 @@ public class TheatreService {
                 .onStatus(HttpStatus :: isError,
                         response -> Mono.error(new ServiceException("Error while trying to reserve seat" +
                                 quote.getSeatId().toString(), response.statusCode().value())))
-                .bodyToMono(new ParameterizedTypeReference<Seat>() {
+                .bodyToMono(new ParameterizedTypeReference<Ticket>() {
                 })
                 .block());
-
-        this.getTicket(quote.getCompany(), quote.getShowId(), quote.getSeatId());
-        System.out.println("Temp ticket properties if any");
-
-        //System.out.println("Company: " + tempTicket.getCompany());
-        return seat;
     }
 
-    public Ticket getTicket(String company, UUID showId, UUID seatId) {
-       return webClientBuilder.baseUrl(company)
+    /**
+     * Deletes ticket.
+     * @param ticket already created ticket
+     * @return
+     */
+    public Ticket deleteTicket(Ticket ticket) {
+        return Objects.requireNonNull(webClientBuilder.baseUrl("https://" + ticket.getCompany())
                 .build()
-                .get()
+                .delete()
                 .uri(uriBuilder -> uriBuilder
                         .pathSegment("shows")
-                        .pathSegment(showId.toString())
+                        .pathSegment(ticket.getShowId().toString())
                         .pathSegment("seats")
-                        .pathSegment(seatId.toString())
+                        .pathSegment(ticket.getSeatId().toString())
                         .pathSegment("ticket")
+                        .pathSegment(ticket.getTicketId().toString())
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
-
+                .onStatus(HttpStatus :: isError,
+                        response -> Mono.error(new ServiceException("Error while trying to delete ticket with ID " + ticket.getTicketId().toString(),
+                                response.statusCode().value())))
                 .bodyToMono(new ParameterizedTypeReference<Ticket>() {
                 })
-                .block();
+                .block());
     }
 }

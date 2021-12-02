@@ -40,22 +40,20 @@ public class PubSubHandler {
     private String projectId = null;
 
     @Autowired
+    private String pubSubEndpoint;
+
+    @Autowired
     private CredentialsProvider pubSubCredentialsProvider;
 
     @Autowired
     private TransportChannelProvider channelProvider;
 
     @Autowired
-    private PushConfig pushConfig;
+    private boolean isProduction;
 
     public PubSubHandler() {
 
     }
-
-    /**
-     * Sets environmental variable and channel for local pub sub testing
-     * @throws IOException
-     */
 
     /**
      * Creates topic.
@@ -94,7 +92,11 @@ public class PubSubHandler {
         Publisher publisher = null;
         try {
             // Create a publisher instance with default settings bound to the topic
-            publisher = Publisher.newBuilder(topicName).setChannelProvider(channelProvider).setCredentialsProvider(pubSubCredentialsProvider).build();
+            if(!isProduction) {
+                publisher = Publisher.newBuilder(topicName).setChannelProvider(channelProvider).setCredentialsProvider(pubSubCredentialsProvider).build();
+            } else {
+                publisher = Publisher.newBuilder(topicName).build();
+            }
 
             PubsubMessage pubsubMessage = null;
             if(message == null) {
@@ -148,11 +150,17 @@ public class PubSubHandler {
      */
     public void createPushSubscriptionExample(String subscriptionId, String topicId) throws IOException{
 
-        SubscriptionAdminSettings subscriptionAdminSettings = SubscriptionAdminSettings.newBuilder()
-                .setTransportChannelProvider(channelProvider).setCredentialsProvider(pubSubCredentialsProvider)
-                .build();
-
-        try (SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create(subscriptionAdminSettings)) {
+        SubscriptionAdminClient subscriptionAdminClient = null;
+        // LOCAL DEVELOPMENT
+        if(!isProduction) {
+            SubscriptionAdminSettings subscriptionAdminSettings = SubscriptionAdminSettings.newBuilder()
+                    .setTransportChannelProvider(channelProvider).setCredentialsProvider(pubSubCredentialsProvider)
+                    .build();
+            subscriptionAdminClient = SubscriptionAdminClient.create(subscriptionAdminSettings);
+        } else {
+            subscriptionAdminClient = SubscriptionAdminClient.create();
+        }
+        try {
             TopicName topicName = TopicName.of(projectId, topicId);
             ProjectSubscriptionName subscriptionName =
                     ProjectSubscriptionName.of(projectId, subscriptionId);
@@ -160,6 +168,7 @@ public class PubSubHandler {
 
             // Create a push subscription with default acknowledgement deadline of 10 seconds.
             // Messages not successfully acknowledged within 10 seconds will get resent by the server.
+            PushConfig pushConfig = PushConfig.newBuilder().setPushEndpoint(pubSubEndpoint).build();
             Subscription subscription =
                     subscriptionAdminClient.createSubscription(subscriptionName, topicName, pushConfig, 10);
 
