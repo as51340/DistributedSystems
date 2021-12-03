@@ -5,24 +5,31 @@ import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
 import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import be.kuleuven.distributedsystems.cloud.services.TheatreService;
 import ch.qos.logback.core.net.SyslogOutputStream;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Component
 public class Model {
 
     private TheatreService theatreService = null;
 
+    private Firestore db;
+
     private Map<String, List<Booking>> customerBookings = new HashMap<>();
 
     private static final int repeat = 5;
 
-    // TODO Do we need pubsubhandler here?
     public Model(TheatreService theatreService) {
         this.theatreService = theatreService;
+        Database database = new Database();
+        this.db = database.initDB();
     }
 
     public List<Show> getShows() {
@@ -117,7 +124,23 @@ public class Model {
      * @param customer
      * @return
      */
-    public List<Booking> getBookings(String customer) {
+    // TODO Redo to get from Firebase
+    public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
+
+        ApiFuture<QuerySnapshot> query = db.collection("users").get();
+
+        QuerySnapshot querySnapshot = query.get();
+        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+        for (QueryDocumentSnapshot document : documents) {
+            System.out.println("User: " + document.getId());
+            System.out.println("First: " + document.getString("first"));
+            if (document.contains("middle")) {
+                System.out.println("Middle: " + document.getString("middle"));
+            }
+            System.out.println("Last: " + document.getString("last"));
+            System.out.println("Born: " + document.getLong("born"));
+        }
+        // ---------------------------------------------------------------//
         var bookings = this.customerBookings.get(customer);
         if(bookings == null) {
             return new ArrayList<>();
@@ -129,6 +152,7 @@ public class Model {
      * I would say this is quite expensive
      * @return
      */
+    // TODO Redo to get from Firebase
     public List<Booking> getAllBookings() {
         List<Booking> allBookings = new ArrayList<>();
         for(String customer: this.customerBookings.keySet()) {
@@ -137,10 +161,7 @@ public class Model {
         return allBookings;
     }
 
-    /**
-     *
-     * @return
-     */
+    // TODO Redo to get from Firebase
     public Set<String> getBestCustomers() {
         Set<String> bestCustomers = new HashSet<>();
         int maxTickets = 0;
@@ -168,13 +189,7 @@ public class Model {
         return bestCustomers;
     }
 
-    /**
-     * Maybe this
-     * @param quotes
-     * @param customer
-     */
     public void confirmQuotes(List<Quote> quotes, String customer) {
-        // TODO: reserve all seats for the given quotes
         // Create a booking.
         // There is possibility that we reserved one ticket but cannot reserve some other ticket even after 5 repeats.
         int cnt = 0;
@@ -205,12 +220,22 @@ public class Model {
         if(cnt == quotes.size()) {
             System.out.println("All seats successfully reserved!");
             Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
-            if(this.customerBookings.get(customer) == null) {
-                this.customerBookings.put(customer, new ArrayList<>());
+
+            // Saving to Firestore NoSQL DB (SetOptions.merge() dodati za merge)
+            ApiFuture<DocumentReference> future = db.collection("ds").add(booking);
+            try {
+                System.out.println("Update time : ");
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.err.println("Something when wrong when saving a booking to the database");
             }
-            this.customerBookings.get(customer).add(booking);
-        } else {
-            System.err.println("Error happened while reserving seats.");
+
+//            if(this.customerBookings.get(customer) == null) {
+//                this.customerBookings.put(customer, new ArrayList<>());
+//            }
+//            this.customerBookings.get(customer).add(booking);
+//        } else {
+//            System.err.println("Error happened while reserving seats.");
         }
     }
 

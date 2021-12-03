@@ -31,6 +31,7 @@ import reactor.netty.http.client.HttpClient;
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 @SpringBootApplication
@@ -38,7 +39,7 @@ public class Application {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         System.setProperty("server.port", System.getenv().getOrDefault("PORT", "8080"));
 
         // Apache JSP scans by default all JARs, which is not necessary, so disable it
@@ -56,7 +57,7 @@ public class Application {
 
     @Bean
     public String projectId() {
-        return "demo-distributed-systems-kul";
+        return "ds-theatres";
     }
 
     @Bean
@@ -66,7 +67,8 @@ public class Application {
 
     @Bean
     public TransportChannelProvider channelProvider() {
-        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        String hostport = "localhost:8083";
+        //        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
         System.out.println("Hostport: " + hostport);
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         TransportChannelProvider channelProvider =

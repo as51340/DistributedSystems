@@ -14,7 +14,7 @@
            Please set the following parameter for the filename
            for the final zip to `cloud-[1 or 2].[firstname].[lastname]`.
         ************************************************************* -->
-        <zip.filename>cloud-01.Andi.Skrgat</zip.filename>
+        <zip.filename>cloud-02.DanielRey.Sparemblek</zip.filename>
 
         <java.version>11</java.version>
         <maven.compiler.target>11</maven.compiler.target>
@@ -159,7 +159,7 @@
                 <version>2.4.0</version>
                 <configuration>
                     <version>1</version>
-                    <projectId>TODO-level-2</projectId>
+                    <projectId>ds-theatres</projectId>
                     <cloudSdkVersion>358.0.0</cloudSdkVersion>
                 </configuration>
             </plugin>
