@@ -1,0 +1,60 @@
+.grid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 700px;
+}
+
+.item {
+    width: 100%;
+}
+
+.item > img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 500px;
+    width: 100%;
+}
+
+.itemText {
+    padding: 8px;
+}
+
+.itemName {
+    font-size: 36px;
+}
+
+.itemLocation {
+    color: grey;
+}
+
+.seat {
+    display: flex;
+    height: 48px;
+    line-height: 48px;
+}
+
+.seatName {
+    font-weight: bold;
+    width: 128px;
+}
+
+.seats {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.addToCartButton {
+    background: #006994;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+    height: 32px;
+    line-height: 32px;
+    margin: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    width: 40px;
+}

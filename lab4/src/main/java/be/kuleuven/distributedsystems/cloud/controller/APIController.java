@@ -26,6 +26,9 @@ public class APIController {
     private final String confirmQuotesSubscriptionID = "confirmQuotesSubscription";
 
     @Autowired
+    public boolean isProduction;
+
+    @Autowired
     public APIController(Model model, PubSubHandler pubSubHandler) {
         this.model = model;
         this.pubSubHandler = pubSubHandler;
@@ -33,8 +36,10 @@ public class APIController {
 
     @PostConstruct
     public void init() throws IOException {
-        // TODO remove this when deployed to google app engine
-        this.pubSubHandler.createTopic(confirmQuotesTopicID);
+        System.out.println("PostConstruct API: " + isProduction);
+        if(!isProduction) {
+            this.pubSubHandler.createTopic(confirmQuotesTopicID);
+        }
         this.pubSubHandler.createPushSubscriptionExample(confirmQuotesSubscriptionID, confirmQuotesTopicID);
     }
 

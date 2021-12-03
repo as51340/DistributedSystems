@@ -37,7 +37,7 @@ import java.util.Objects;
 @SpringBootApplication
 public class Application {
 
-
+    private final String appURL = "https://ds-theatres.ey.r.appspot.com";
 
     public static void main(String[] args) {
         System.setProperty("server.port", System.getenv().getOrDefault("PORT", "8080"));
@@ -66,22 +66,11 @@ public class Application {
     }
 
     @Bean
-    public TransportChannelProvider channelProvider() {
-        // to do - if isProduction then change
-        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
-        System.out.println("Hostport: " + hostport);
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
-        TransportChannelProvider channelProvider =
-                FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-        return channelProvider;
-    }
-
-    @Bean
     public String pubSubEndpoint() {
         if(!isProduction()) {
             return "http://localhost:8080/pubsub";
         } else {
-            return null;
+            return appURL + "/pubsub";
         }
     }
 

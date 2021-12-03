@@ -1,0 +1,46 @@
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+}
+
+a {
+    color: initial;
+    text-decoration: none;
+}
+
+.menu {
+    background: #4a9cc2;
+    display: flex;
+    height: 64px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.title {
+    color: white;
+    font-size: 32px;
+    line-height: 56px;
+    padding-left: 16px;
+}
+
+.cart, .account, .manager, .logout {
+    line-height: 72px;
+}
+
+.cart > img, .account > img, .manager > img, .logout > img {
+    margin-right: 16px;
+}
+
+.cartBadge {
+    background: #c34b61;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    height: 16px;
+    line-height: 16px;
+    position: absolute;
+    right: 96px;
+    text-align: center;
+    top: 12px;
+    width: 16px;
+}

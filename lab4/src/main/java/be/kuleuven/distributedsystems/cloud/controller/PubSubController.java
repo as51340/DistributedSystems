@@ -25,7 +25,7 @@ public class PubSubController {
     private final Model model;
     private final JsonParser jsonParser = new JsonParser();
     private final Gson gson = new Gson();
-    private Set<Integer> messageIDs = new HashSet<>();
+    private Set<String> messageIDs = new HashSet<>();
 
     @Autowired
     public PubSubController(Model model) {
@@ -46,7 +46,7 @@ public class PubSubController {
         }
         System.out.println("Customer: " + confirmQuotesRequest.getCustomer());
         System.out.println("Message IDS: ");
-        for(Integer messageId: this.messageIDs) {
+        for(String messageId: this.messageIDs) {
             System.out.print(messageId + " ");
         }
         System.out.println();
@@ -54,10 +54,11 @@ public class PubSubController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private Integer getMessageId(JsonElement jsonRoot) {
+    private String getMessageId(JsonElement jsonRoot) {
         String messageId = jsonRoot.getAsJsonObject().get("message").getAsJsonObject().get("messageId").toString();
         messageId = messageId.substring(1, messageId.length()-1);
-        return Integer.parseInt(messageId);
+        System.out.println("After parsing message: " + messageId);
+        return messageId;
     }
 
     private ConfirmQuotesRequest getData(JsonElement jsonRoot) {

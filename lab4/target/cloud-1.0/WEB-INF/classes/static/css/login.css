@@ -1,0 +1,7 @@
+body {
+    background: #eee;
+}
+
+#firebaseui-auth-container {
+    margin-top: 10%;
+}

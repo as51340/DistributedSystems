@@ -46,7 +46,7 @@ public class Model {
             try {
                 show = this.theatreService.getShow(company, showId);
             } catch(ServiceException ex) {
-                System.err.println("Trying to fetch show: " + showId.toString());
+                // System.err.println("Trying to fetch show: " + showId.toString());
             }
         }
         return show;
@@ -60,7 +60,7 @@ public class Model {
                 break;
             } catch(ServiceException ex) {
                 // just continue
-                System.err.println("Times: " + times);
+                // System.err.println("Times: " + times);
             }
         }
         if(times == null) {
@@ -76,7 +76,7 @@ public class Model {
                 seats = this.theatreService.getAvailableSeats(company, showId, time);
                 break;
             } catch(ServiceException ex) {
-                System.err.println("Seats: " + seats);
+                // System.err.println("Seats: " + seats);
             }
         }
         if(seats == null) {
@@ -92,7 +92,7 @@ public class Model {
                 seat = this.theatreService.getSeat(company, showId, seatId);
                 break;
             } catch(ServiceException ex) {
-                System.out.println(ex.getMessage());
+                // System.out.println(ex.getMessage());
             }
         }
         return seat;
@@ -105,7 +105,7 @@ public class Model {
                 ticket = this.theatreService.getTicket(company, showId, seatId);
                 break;
             } catch(ServiceException ex) {
-                System.out.println(ex.getMessage());
+                // System.out.println(ex.getMessage());
             }
         }
         return ticket;
@@ -183,9 +183,22 @@ public class Model {
             for(int i = 0; i < repeat; i++) {
                 try {
                     Ticket currentTicket = this.theatreService.putTicket(quote, customer);
+                    // System.out.println("Put ticket: ");
+                    // System.out.println("Show ID: " + currentTicket.getShowId().toString());
+                    // System.out.println("Seat ID: " + currentTicket.getSeatId().toString());
+                    // System.out.println("Ticket ID: " + currentTicket.getTicketId().toString());
+                    // System.out.println("Company: " + currentTicket.getCompany());
+                    // System.out.println("Customer: " + currentTicket.getCustomer());
+                    // System.out.println();
+                    // Ticket getTicket = this.theatreService.getTicket(quote.getCompany(), quote.getShowId(), quote.getSeatId());
+                    // System.out.println("Get ticket: ");
+                    // System.out.println("Show ID: " + getTicket.getShowId().toString());
+                    // System.out.println("Seat ID: " + getTicket.getSeatId().toString());
+                    // System.out.println("Ticket ID: " + getTicket.getTicketId().toString());
+                    // System.out.println("Company: " + getTicket.getCompany());
+                    // System.out.println("Customer: " + getTicket.getCustomer());
+                    // System.out.println();
                     reserved = true;
-                    System.out.println("New ticket: " + currentTicket.getTicketId().toString());
-                    System.out.println("New seat: " + quote.getSeatId().toString());
                     tickets.add(currentTicket);
                     break;
                 } catch(ServiceException ex) {
@@ -195,20 +208,34 @@ public class Model {
             if(reserved) {
                 cnt += 1;
             } else {
-                // Do not continue
                 break;
             }
         }
         if(cnt == quotes.size()) {
             System.out.println("All seats successfully reserved!");
             Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
-            if(this.customerBookings.get(customer) == null) {
-                this.customerBookings.put(customer, new ArrayList<>());
-            }
+            this.customerBookings.computeIfAbsent(customer, k -> new ArrayList<>());
             this.customerBookings.get(customer).add(booking);
         } else {
             // TODO delete already reserved tickets
-            System.err.println("Error happened while reserving seats.");
+            System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
+            for(Ticket ticket: tickets) {
+                boolean deleted = false;
+                for(int i = 0; i < repeat; i++) {
+                    try {
+                        String res = this.theatreService.deleteTicket(ticket);
+                        System.out.println("Delete result");
+                        System.out.println(res);
+                        deleted = true;
+                        break;
+                    } catch(ServiceException | NullPointerException ex) {
+
+                    }
+                }
+                if(!deleted) {
+                    System.out.println("Failed to delete old ticket, further action needed...");
+                }
+            }
         }
     }
 

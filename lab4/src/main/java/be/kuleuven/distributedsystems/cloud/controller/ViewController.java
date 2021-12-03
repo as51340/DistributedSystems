@@ -4,29 +4,14 @@ import be.kuleuven.distributedsystems.cloud.Model;
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
-import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
-import be.kuleuven.distributedsystems.cloud.pubsub.requests.ConfirmQuotesRequest;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.api.gax.grpc.GrpcTransportChannel;
-import com.google.api.gax.rpc.FixedTransportChannelProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.pubsub.v1.TopicAdminClient;
-import com.google.cloud.pubsub.v1.TopicAdminSettings;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import org.eclipse.jetty.util.IO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -167,13 +152,7 @@ public class ViewController {
                     shows.put(t.getShowId(), this.model.getShow(t.getCompany(), t.getShowId()));
                 }
                 if (!seats.containsKey(t.getSeatId())) {
-                    System.out.println("Calling get seat");
                     Seat seat = this.model.getSeat(t.getCompany(), t.getShowId(), t.getSeatId());
-                    System.out.println("Seat id: " + seat.getSeatId().toString() );
-                    System.out.println("Seat name: " + seat.getName());
-                    System.out.println("Company: " + seat.getCompany() );
-                    System.out.println("Seat price: " + seat.getPrice());
-                    System.out.println("Show: " + seat.getShowId().toString());
                     seats.put(t.getSeatId(), seat);
                 }
             }
@@ -190,9 +169,6 @@ public class ViewController {
     @GetMapping("/manager")
     public ModelAndView viewManager(
             @CookieValue(value = "cart", required = false) String cartString) throws Exception {
-
-        // Careful how to handle empty object
-        // pubSubHandler.publishWithErrorHandlerExample(bestCustomerTopicID, null);
 
         List<Quote> quotes = Cart.fromCookie(cartString);
         ModelAndView modelAndView = new ModelAndView("manager");

@@ -10,6 +10,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -136,22 +137,24 @@ public class TheatreService {
                         .block())
                 .getContent();
 
-        String res = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
-                .build()
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .pathSegment("shows")
-                        .pathSegment(showId.toString())
-                        .pathSegment("seats")
-                        .queryParam("time", time.toString())
-                        .queryParam("available", true)
-                        .queryParam("key", API_KEY)
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class).block());
-
-        System.out.println("Result!!!");
-        System.out.println(res);
+        // String res = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
+        //         .build()
+        //         .get()
+        //         .uri(uriBuilder -> uriBuilder
+        //                 .pathSegment("shows")
+        //                 .pathSegment(showId.toString())
+        //                 .pathSegment("seats")
+        //                 .queryParam("time", time.toString())
+        //                 .queryParam("available", true)
+        //                 .queryParam("key", API_KEY)
+        //                 .build())
+        //         .retrieve()
+        //         .onStatus(HttpStatus :: isError,
+        //                 response -> Mono.error(new ServiceException("Error while trying to fetch available seats", response.statusCode().value())))
+        //         .bodyToMono(String.class).block());
+//
+        // System.out.println("Result!!!");
+        // System.out.println(res);
 
         return new ArrayList<>(seats);
     }
@@ -217,8 +220,14 @@ public class TheatreService {
      * @param ticket already created ticket
      * @return
      */
-    public Ticket deleteTicket(Ticket ticket) {
-        return Objects.requireNonNull(webClientBuilder.baseUrl("https://" + ticket.getCompany())
+    public String deleteTicket(Ticket ticket) {
+        System.out.println("Delete ticket properties...");
+        System.out.println(ticket.getCompany());
+        System.out.println(ticket.getTicketId().toString());
+        System.out.println(ticket.getShowId().toString());
+        System.out.println(ticket.getSeatId().toString());
+        System.out.println();
+        String res = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + ticket.getCompany())
                 .build()
                 .delete()
                 .uri(uriBuilder -> uriBuilder
@@ -234,8 +243,8 @@ public class TheatreService {
                 .onStatus(HttpStatus :: isError,
                         response -> Mono.error(new ServiceException("Error while trying to delete ticket with ID " + ticket.getTicketId().toString(),
                                 response.statusCode().value())))
-                .bodyToMono(new ParameterizedTypeReference<Ticket>() {
-                })
+                .bodyToMono(String.class)
                 .block());
+        return res;
     }
 }

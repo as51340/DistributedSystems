@@ -1,0 +1,47 @@
+.grid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 700px;
+}
+
+.item {
+    width: 100%;
+}
+
+.item > img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 500px;
+    width: 100%;
+}
+
+.itemText {
+    padding: 8px;
+}
+
+.itemName {
+    font-size: 36px;
+}
+
+.itemLocation {
+    color: grey;
+}
+
+.time {
+    display: flex;
+    height: 48px;
+    line-height: 48px;
+}
+
+.bookButton {
+    background: #006994;
+    border-radius: 4px;
+    color: white;
+    height: 32px;
+    line-height: 32px;
+    margin: 8px;
+    margin-left: 64px;
+    padding-left: 8px;
+    padding-right: 8px;
+}

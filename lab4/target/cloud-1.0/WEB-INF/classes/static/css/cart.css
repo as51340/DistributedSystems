@@ -1,0 +1,57 @@
+.grid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 700px;
+}
+
+.quote {
+    display: grid;
+    grid-template-columns: 1fr 150px 100px 50px 75px;
+    line-height: 48px;
+}
+
+.quoteTime {
+    text-align: right;
+}
+
+.quoteSeatType {
+    text-align: right;
+}
+
+.quoteSeatName {
+    text-align: right;
+}
+
+.removeFromCartButton {
+    background: #006994;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+    height: 32px;
+    line-height: 32px;
+    margin: 8px 8px 8px 64px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.confirmCartButton {
+    align-items: center;
+    background: #006994;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    font-family: system-ui, sans-serif;
+    height: 32px;
+    justify-content: center;
+    line-height: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 64px;
+    padding-left: 8px;
+    padding-right: 8px;
+    width: 150px;
+}

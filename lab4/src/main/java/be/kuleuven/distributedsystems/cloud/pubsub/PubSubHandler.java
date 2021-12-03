@@ -37,22 +37,30 @@ import java.util.concurrent.TimeUnit;
 public class PubSubHandler {
 
     @Autowired
-    private String projectId = null;
+    private String projectId;
 
     @Autowired
     private String pubSubEndpoint;
 
     @Autowired
-    private CredentialsProvider pubSubCredentialsProvider;
-
-    @Autowired
-    private TransportChannelProvider channelProvider;
-
-    @Autowired
     private boolean isProduction;
 
-    public PubSubHandler() {
+    private CredentialsProvider pubSubCredentialsProvider = null;
 
+    private TransportChannelProvider channelProvider = null;
+
+    public PubSubHandler() {
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.println("Project id: " + projectId);
+        System.out.println("PubSubEndpoint: " + pubSubEndpoint);
+        System.out.println("Is production: " + isProduction);
+        if(!isProduction) {
+            this.channelProvider = getChannelProvider();
+            this.pubSubCredentialsProvider = NoCredentialsProvider.create();
+        }
     }
 
     /**
@@ -78,6 +86,15 @@ public class PubSubHandler {
         } catch (AlreadyExistsException e) {
             System.out.println("Topic " + topicName.getTopic() + " already exists.");
         }
+    }
+
+    public TransportChannelProvider getChannelProvider() {
+        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        System.out.println("Hostport: " + hostport);
+        ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
+        TransportChannelProvider channelProvider =
+                FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+        return channelProvider;
     }
 
     /**
@@ -170,7 +187,7 @@ public class PubSubHandler {
             // Messages not successfully acknowledged within 10 seconds will get resent by the server.
             PushConfig pushConfig = PushConfig.newBuilder().setPushEndpoint(pubSubEndpoint).build();
             Subscription subscription =
-                    subscriptionAdminClient.createSubscription(subscriptionName, topicName, pushConfig, 10);
+                    subscriptionAdminClient.createSubscription(subscriptionName, topicName, pushConfig, 60);
 
             System.out.println("Created push subscription: " + subscription.getName() + " for topic " + topicName.getTopic() +
                     " push endpoint " + pushConfig.getPushEndpoint());

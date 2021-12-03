@@ -2,14 +2,22 @@ let firebaseConfig;
 if (location.hostname === "localhost") {
     firebaseConfig = {
         apiKey: "AIzaSyBoLKKR7OFL2ICE15Lc1-8czPtnbej0jWY",
-        projectId: "demo-distributed-systems-kul",
+        projectId: "ds-theatres",
     }
 } else {
-    // TODO: (level 2) replace with your own configuration
-    firebaseConfig = {}
+    firebaseConfig = {
+        apiKey: "AIzaSyDhatz5atmyJV7x4VgrZXRhqSgcpUqUrBE",
+        authDomain: "ds-theatres.firebaseapp.com",
+        projectId: "ds-theatres",
+        storageBucket: "ds-theatres.appspot.com",
+        messagingSenderId: "628136502815",
+        appId: "1:628136502815:web:13835cc7176753adee572a",
+        measurementId: "G-1JZ25W0V5G"
+    };
 }
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+
 if (location.hostname === "localhost") {
     auth.useEmulator("http://localhost:8082");
 }
