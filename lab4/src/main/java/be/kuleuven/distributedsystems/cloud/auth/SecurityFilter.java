@@ -1,13 +1,20 @@
 package be.kuleuven.distributedsystems.cloud.auth;
 
+import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import be.kuleuven.distributedsystems.cloud.entities.User;
+import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.rpc.InvalidArgumentException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,8 +35,16 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.*;
 
+
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private WebClient.Builder webClientBuilder;
+
+    @Autowired
+    private String projectId;
+
 
     /**
      * Decodes identity token and returns with which we can work more easily
@@ -55,35 +70,72 @@ public class SecurityFilter extends OncePerRequestFilter {
         return false;
     }
 
-    private void getKeys() {
+    /**
+     * @return keys from gserviceaccount.com
+     * @throws JsonProcessingException
+     */
+    private Map<String, String> getKeys() throws JsonProcessingException {
         String keysURL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
-        RestTemplate template = new RestTemplate();
-        HttpEntity<Map> response = template.exchange(keysURL, HttpMethod.POST, null, Map.class);
 
-        Map<String, String> result = response.getBody();
-        HttpHeaders headers = response.getHeaders();
+        ObjectMapper mapper = new ObjectMapper();
+        String responseStr =  Objects.requireNonNull(webClientBuilder.baseUrl(keysURL)
+                .build()
+                .get()
+                .retrieve()
+                .onStatus(HttpStatus:: isError,
+                        response -> Mono.error(new ServiceException("Error while trying to fetch keys...", response.statusCode().value())))
+                .bodyToMono(String.class)
+                .block());
 
-        // get some cache control
+        Map<String, String> publicKeys = mapper.readValue(responseStr, Map.class);
+        return publicKeys;
     }
 
-    private boolean verifyIdentityToken(DecodedJWT jwt) {
-        // Check algorith
-        System.out.println("Algorithm: " + jwt.getAlgorithm());
-        // if(!jwt.getAlgorithm().equals("RS256")) return false; // not it returns None
+    private boolean verifyIdentityToken(DecodedJWT jwt) throws JsonProcessingException {
+        // HEADER CHECK
+        // Check algorithm
+        if(!jwt.getAlgorithm().equals("RS256")) return false; // not it returns None
 
         // Get keyId
-        this.getKeys();
+        Map<String, String> publicKeys = this.getKeys();
         String key = jwt.getKeyId();
-        // System.out.println("My real key");
-        // System.out.println(key);
-        // check them somehow
+        if(!publicKeys.containsKey(key)) {
+            return false;
+        }
+        // Corresponding certificate for obtained key
+        String certificate = publicKeys.get(key);
 
-        long expTime = jwt.getExpiresAt().getTime();
+        // PAYLOAD CHECK
+        long unixTime = System.currentTimeMillis(); // current time since Unix epoch
+        long expTime = jwt.getExpiresAt().getTime(); // expiration time
         long iat = jwt.getIssuedAt().getTime();
-        List<String> aud = jwt.getAudience();
-        String iss = jwt.getIssuer();
-        String sub = jwt.getSubject();
 
+        if(expTime < unixTime) {
+            System.out.println("Expiration time fail..." + expTime);
+            System.out.println("Unix time: " + unixTime);
+            return false;
+        }
+        if(iat > unixTime) {
+            System.out.println("Issued at time fail..." + iat);
+            System.out.println("Unix time: " + unixTime);
+            return false;
+        }
+
+        List<String> aud = jwt.getAudience();
+        if(aud.size() > 1 || !aud.get(0).equals(projectId)) {
+            System.out.println("Audience fail...");
+            return false;
+        }
+        String iss = jwt.getIssuer();
+        if(!iss.equals("https://securetoken.google.com/" + projectId)) { // check if this is true
+            System.out.println("Issuer fail... " + iss);
+            return false;
+        }
+        String sub = jwt.getSubject();
+        if(sub.isBlank() || sub.isEmpty()) {
+            System.out.println("Subject fail..." + sub);
+            return false;
+        }
         return true;
     }
 
@@ -91,7 +143,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException{
         var session = WebUtils.getCookie(request, "session");
         if (session != null) {
-            // TODO: (level 1) decode Identity Token and assign correct email and role
+
             String token = session.getValue();
             DecodedJWT jwt = this.decodeIdentityToken(token);
             String email = jwt.getClaim("email").asString(); // here you can also choose email_verified
@@ -99,12 +151,11 @@ public class SecurityFilter extends OncePerRequestFilter {
             User user = new User(email, role);;
             SecurityContext context = SecurityContextHolder.getContext();
             context.setAuthentication(new FirebaseAuthentication(user));
-            // TODO: (level 2) verify Identity Token
 
             // Check identity token
-            //if(!this.verifyIdentityToken(jwt)) {
-            //    throw new ServletException("Verifying identity token failed!");
-            //}
+            if(!this.verifyIdentityToken(jwt)) {
+                throw new ServletException("Verifying identity token failed!");
+            }
         }
         filterChain.doFilter(request, response);
     }

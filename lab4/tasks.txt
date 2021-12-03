@@ -60,19 +60,10 @@ Questions:
 Ask about schema
 
 
-handling null pointer exception
 
-getSeat, getShow, acou
-"company" : "unreliabletheatrecompany.com",
-      "showId" : "62f893ab-6721-417a-9dbf-59b511e97676",
-      "seatId" : "53047bbb-a319-4cf4-bb61-9c0c6285bd43",
-      "time" : "2021-12-01T19:00:00",
-      "type" : "Balcony",
-      "name" : "D7",
-      "price" : 25.0,
-
-
-
+1. Ask what should we check for subject? Is it okay just to check that is non empty?
+2. How to get auth_time for token verification?
+3. What to do with that uid?
 
 
 
