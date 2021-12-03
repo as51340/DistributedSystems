@@ -3,6 +3,7 @@ be/kuleuven/distributedsystems/cloud/controller/ViewController.class
 be/kuleuven/distributedsystems/cloud/controller/PubSubController.class
 be/kuleuven/distributedsystems/cloud/services/TheatreService$6.class
 be/kuleuven/distributedsystems/cloud/services/TheatreService.class
+be/kuleuven/distributedsystems/cloud/Application.class
 be/kuleuven/distributedsystems/cloud/services/TheatreService$4.class
 be/kuleuven/distributedsystems/cloud/services/TheatreService$7.class
 be/kuleuven/distributedsystems/cloud/services/TheatreService$2.class

@@ -16,3 +16,7 @@ automatic_scaling:
   max_pending_latency: 15000ms
   target_cpu_utilization: 0.9
   target_throughput_utilization: 0.9
+
+env_variables:
+  EMAIL_API_KEY: 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
+  MAIL_FROM: andi.krgat@student.kuleuven.be

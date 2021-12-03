@@ -16,23 +16,18 @@ import java.io.IOException;
 @Component
 public class SendGridEmail {
 
-    @Autowired
-    private String sendGridAPI;
-
-    @Autowired
-    private String emailFrom;
-
     public void sendEmail(String subject, String mailContent, String customer) {
         // Mail content should differ if we have failure or pub/sub finished successfully
         // You're sending mail to customer
-        System.out.println("Email from: " + emailFrom);
-        System.out.println("SendGRID api key: " + sendGridAPI);
+        String emailFrom = System.getenv("MAIL_FROM");
+        // System.out.println("Email from: " + emailFrom);
         Email from = new Email(emailFrom);
         Email to = new Email(customer);
         Content content = new Content("text/plain", mailContent);
         Mail mail = new Mail(from, subject, to, content);
 
-        // SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+        String sendGridAPI = System.getenv("EMAIL_API_KEY");
+        // System.out.println("SendGRID api key: " + sendGridAPI);
         SendGrid sg = new SendGrid(sendGridAPI);
         Request request = new Request();
         try {
