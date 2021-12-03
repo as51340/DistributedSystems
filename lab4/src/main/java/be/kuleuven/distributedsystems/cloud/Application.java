@@ -60,6 +60,13 @@ public class Application {
         return "ds-theatres";
     }
 
+    // TODO SAVE TO ENVIRONMENT VARIABLES
+    @Bean
+    public String sendGridAPI() { return "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"; }
+
+    @Bean
+    public String emailFrom() { return "andi.krgat@student.kuleuven.be"; }
+
     @Bean
     public CredentialsProvider pubSubCredentialsProvider() {
         return NoCredentialsProvider.create();

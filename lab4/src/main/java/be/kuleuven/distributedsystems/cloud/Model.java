@@ -2,6 +2,7 @@ package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
+import be.kuleuven.distributedsystems.cloud.services.SendGridEmail;
 import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import be.kuleuven.distributedsystems.cloud.services.TheatreService;
 import ch.qos.logback.core.net.SyslogOutputStream;
@@ -14,14 +15,21 @@ import java.util.*;
 @Component
 public class Model {
 
+    // Theatre service for fetching stuff
     private TheatreService theatreService = null;
 
+    // Currently save bookings in memory
     private Map<String, List<Booking>> customerBookings = new HashMap<>();
 
+    // SendGrid setup
+    private SendGridEmail sendGrid;
+
+    // Number of times that we will try to contact theatre companies
     private static final int repeat = 5;
 
-    public Model(TheatreService theatreService) {
+    public Model(TheatreService theatreService, SendGridEmail sendGrid) {
         this.theatreService = theatreService;
+        this.sendGrid = sendGrid;
     }
 
     public List<Show> getShows() {
@@ -212,10 +220,12 @@ public class Model {
             }
         }
         if(cnt == quotes.size()) {
-            System.out.println("All seats successfully reserved!");
+            System.out.println("All seats successfully reserved, sending mail to customer and adding booking to memory...");
             Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
             this.customerBookings.computeIfAbsent(customer, k -> new ArrayList<>());
             this.customerBookings.get(customer).add(booking);
+            // TODO try to add HTML to mail, return to him list of generated tickets
+            sendGrid.sendEmail("Ticket reservation success", "Dear customer, all your tickets have been successfully confirmed...", customer);
         } else {
             // TODO delete already reserved tickets
             System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
@@ -236,6 +246,9 @@ public class Model {
                     System.out.println("Failed to delete old ticket, further action needed...");
                 }
             }
+            // TODO try to add HTML to mail
+            sendGrid.sendEmail("Ticket reservation failure", "Dear customer, your tickets couldn't be processed, please try to do again or feel free to contact us for further questions...",
+                    customer);
         }
     }
 

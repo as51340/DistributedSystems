@@ -5,6 +5,7 @@
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/auth/WebSecurityConfig.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/entities/Quote.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/auth/SecurityFilter.java
+/home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/services/SendGridEmail.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/pubsub/requests/ConfirmQuotesRequest.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/PubSubController.java
 /home/andi/leuven/DistributedSystems/lab4/src/main/java/be/kuleuven/distributedsystems/cloud/controller/Cart.java
