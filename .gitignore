@@ -25,3 +25,6 @@ azure.txt
 # *.ps
 # *.eps
 # *.pdf
+
+# Deploy
+.war
