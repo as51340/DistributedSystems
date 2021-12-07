@@ -247,9 +247,22 @@ public class Model {
                 }
             }
             // TODO try to add HTML to mail
-            sendGrid.sendEmail("Ticket reservation failure", "Dear customer, your tickets couldn't be processed, please try to do again or feel free to contact us for further questions...",
+            sendGrid.sendEmail("Ticket reservation failure",
+                    "Dear customer, your tickets couldn't be processed, please try to do again or feel free to contact us for further questions...",
                     customer);
         }
     }
 
+
+    private String getSuccessfulMailContent(List<Ticket> tickets, String customer) {
+        StringBuilder seatsStr = new StringBuilder("<ol>");
+        for(Ticket ticket: tickets) {
+            seatsStr.append("<li>").append(ticket.getSeatId()).append("</li>\n");
+        }
+        seatsStr.append("</ol>\n");
+
+        StringBuilder finalStr = new StringBuilder();
+        finalStr.append("<html>\nDear ").append(customer).append(", \nYour request for seats\n").append(seatsStr.toString());
+        return null;
+    }
 }
