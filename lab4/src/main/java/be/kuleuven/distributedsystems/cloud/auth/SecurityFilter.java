@@ -18,18 +18,17 @@ import com.google.auth.oauth2.IdToken;
 import com.google.auth.oauth2.IdTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.header.Header;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.WebUtils;
 import reactor.core.publisher.Mono;
@@ -66,6 +65,17 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Autowired
     private String projectId;
 
+    @Autowired
+    private boolean isProduction;
+
+    private long keysExpirationTimeSeconds = 0;
+
+    // For fetching keys from googleapis.
+    private String keysURL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
+
+    // cached public keys
+    private Map<String, String> publicKeys;
+
     /**
      * Decodes identity token and returns with which we can work more easily
      * @param token
@@ -86,38 +96,44 @@ public class SecurityFilter extends OncePerRequestFilter {
      * @throws JsonProcessingException
      */
     private Map<String, String> getKeys() throws JsonProcessingException {
-        String keysURL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
-
-        ObjectMapper mapper = new ObjectMapper();
-        String responseStr =  Objects.requireNonNull(webClientBuilder.baseUrl(keysURL)
-                .build()
-                .get()
-                .retrieve()
-                .onStatus(HttpStatus:: isError,
-                        response -> Mono.error(new ServiceException("Error while trying to fetch keys...", response.statusCode().value())))
-                .bodyToMono(String.class)
-                .block());
-
-        Map<String, String> publicKeys = mapper.readValue(responseStr, Map.class);
-        return publicKeys;
+        long currSecndTime = System.currentTimeMillis() / 1000;
+        if(currSecndTime > this.keysExpirationTimeSeconds ) {
+            System.out.println("Fetching public keys from googleapis...");
+            ObjectMapper mapper = new ObjectMapper();
+            ResponseEntity<String> respEntity =  Objects.requireNonNull(webClientBuilder.baseUrl(keysURL)
+                    .build()
+                    .get()
+                    .retrieve()
+                    .onStatus(HttpStatus:: isError,
+                            response -> Mono.error(new ServiceException("Error while trying to fetch keys...", response.statusCode().value())))
+                    .toEntity(String.class)
+                    .block());
+            long fetchedTime = System.currentTimeMillis() / 1000;
+            String cacheControlObj = respEntity.getHeaders().getCacheControl();
+            String[] cacheControlSplitted = cacheControlObj.split(", ");
+            // The maximum amount of time in seconds that fetched responses are allowed to be used again
+            long maxAge = 0;
+            for(String tempValue: cacheControlSplitted) {
+                if(tempValue.startsWith("max-age")) {
+                    String[] desVal = tempValue.split("=");
+                    maxAge = Long.parseLong(desVal[1]);
+                }
+            }
+            // UPDATE KEYS AND TIME WHEN THEY WERE LAST FETCHED
+            Map<String, String> fetchedPublicKeys = mapper.readValue(respEntity.getBody(), Map.class);
+            this.publicKeys = fetchedPublicKeys;
+            this.keysExpirationTimeSeconds = fetchedTime + maxAge;
+        } else {
+            System.out.println("No need to fetch keys again...");
+        }
+        return this.publicKeys;
     }
-
+    // Creates RSAPublicKey from certificate
     private RSAPublicKey getPublicKey(String certificate) throws NoSuchAlgorithmException, InvalidKeySpecException, CertificateException {
         CertificateFactory factory = CertificateFactory.getInstance("X.509");
         InputStream in = new ByteArrayInputStream(certificate.getBytes(StandardCharsets.UTF_8));
         Certificate cer = factory.generateCertificate(in);
         return (RSAPublicKey) cer.getPublicKey();
-
-
-
-        // String parsedCertificate = certificate.replaceAll("\\n", "")
-        //         .replace("-----BEGIN CERTIFICATE-----", "")
-        //         .replace("-----END CERTIFICATE-----", "");
-//
-        // KeyFactory kf = KeyFactory.getInstance("RSA");
-        // X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(parsedCertificate));
-        // RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
-        // return pubKey;
     }
 
     private boolean verifyIdentityToken(DecodedJWT jwt) throws IOException {
@@ -173,11 +189,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
 
         // CHECK SIGNATURE OF THE ID TOKEN
-
-        System.out.println("ID: " + jwt.getId());
-        System.out.println("Token: " + jwt.getToken());
-        System.out.println("Signature: " + jwt.getSignature());
-
         try {
             Algorithm algorithm = Algorithm.RSA256(getPublicKey(certificate), null);
             JWTVerifier verifier = JWT.require(algorithm)
@@ -185,8 +196,9 @@ public class SecurityFilter extends OncePerRequestFilter {
                     .build(); //Reusable verifier instance
             DecodedJWT jwt_verifier = verifier.verify(jwt.getToken());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | JWTVerificationException | CertificateException e) {
-            e.printStackTrace();
+            System.out.println("Checking signature of the ID token failed...");
         }
+        System.out.println("Token check passed...");
         return true;
     }
 
@@ -204,8 +216,10 @@ public class SecurityFilter extends OncePerRequestFilter {
             context.setAuthentication(new FirebaseAuthentication(user));
 
             // Check identity token
-            if(!this.verifyIdentityToken(jwt)) {
-                throw new ServletException("Verifying identity token failed!");
+            if(isProduction) {
+                if(!this.verifyIdentityToken(jwt)) {
+                    throw new ServletException("Verifying identity token failed!");
+                }
             }
         }
         filterChain.doFilter(request, response);

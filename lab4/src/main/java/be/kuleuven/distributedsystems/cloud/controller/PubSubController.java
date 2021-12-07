@@ -41,11 +41,7 @@ public class PubSubController {
             return new ResponseEntity<>(HttpStatus.ALREADY_REPORTED);
         }
         ConfirmQuotesRequest confirmQuotesRequest = this.getData(jsonRoot);
-        for(Quote quote: confirmQuotesRequest.getQuotes()) {
-            System.out.println("Company: " + quote.getCompany());
-        }
-        System.out.println("Customer: " + confirmQuotesRequest.getCustomer());
-        System.out.println("Message IDS: ");
+
         for(String messageId: this.messageIDs) {
             System.out.print(messageId + " ");
         }

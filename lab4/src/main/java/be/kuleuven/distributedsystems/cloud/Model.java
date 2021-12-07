@@ -191,21 +191,6 @@ public class Model {
             for(int i = 0; i < repeat; i++) {
                 try {
                     Ticket currentTicket = this.theatreService.putTicket(quote, customer);
-                    // System.out.println("Put ticket: ");
-                    // System.out.println("Show ID: " + currentTicket.getShowId().toString());
-                    // System.out.println("Seat ID: " + currentTicket.getSeatId().toString());
-                    // System.out.println("Ticket ID: " + currentTicket.getTicketId().toString());
-                    // System.out.println("Company: " + currentTicket.getCompany());
-                    // System.out.println("Customer: " + currentTicket.getCustomer());
-                    // System.out.println();
-                    // Ticket getTicket = this.theatreService.getTicket(quote.getCompany(), quote.getShowId(), quote.getSeatId());
-                    // System.out.println("Get ticket: ");
-                    // System.out.println("Show ID: " + getTicket.getShowId().toString());
-                    // System.out.println("Seat ID: " + getTicket.getSeatId().toString());
-                    // System.out.println("Ticket ID: " + getTicket.getTicketId().toString());
-                    // System.out.println("Company: " + getTicket.getCompany());
-                    // System.out.println("Customer: " + getTicket.getCustomer());
-                    // System.out.println();
                     reserved = true;
                     tickets.add(currentTicket);
                     break;
@@ -227,15 +212,13 @@ public class Model {
             // TODO try to add HTML to mail, return to him list of generated tickets
             sendGrid.sendEmail("Ticket reservation success", "Dear customer, all your tickets have been successfully confirmed...", customer);
         } else {
-            // TODO delete already reserved tickets
             System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
             for(Ticket ticket: tickets) {
                 boolean deleted = false;
                 for(int i = 0; i < repeat; i++) {
                     try {
-                        String res = this.theatreService.deleteTicket(ticket);
-                        System.out.println("Delete result");
-                        System.out.println(res);
+                        this.theatreService.deleteTicket(ticket);
+                        System.out.println("Deleted ticket: " + ticket.getTicketId().toString());
                         deleted = true;
                         break;
                     } catch(ServiceException | NullPointerException ex) {
