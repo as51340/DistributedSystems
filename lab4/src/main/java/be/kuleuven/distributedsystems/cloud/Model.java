@@ -210,7 +210,8 @@ public class Model {
             this.customerBookings.computeIfAbsent(customer, k -> new ArrayList<>());
             this.customerBookings.get(customer).add(booking);
             // TODO try to add HTML to mail, return to him list of generated tickets
-            sendGrid.sendEmail("Ticket reservation success", "Dear customer, all your tickets have been successfully confirmed...", customer);
+            String mailContent = this.getSuccessfulMailContent(tickets, customer);
+            sendGrid.sendEmail("Ticket reservation success", mailContent, customer);
         } else {
             System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
             for(Ticket ticket: tickets) {
@@ -231,21 +232,101 @@ public class Model {
             }
             // TODO try to add HTML to mail
             sendGrid.sendEmail("Ticket reservation failure",
-                    "Dear customer, your tickets couldn't be processed, please try to do again or feel free to contact us for further questions...",
+                    this.getUnSuccessfulMailContent(quotes, customer),
                     customer);
         }
     }
 
+    private String getUnSuccessfulMailContent(List<Quote> quotes, String customer) {
+        StringBuilder headBuilder = new StringBuilder()
+                .append("<head>")
+                .append("</head>");
+        StringBuilder seatsStr = new StringBuilder()
+                .append("<ol>");
+        for(Quote quote: quotes) {
+            seatsStr.append("<li>").append(quote.getSeatId()).append("</li>");
+        }
+        seatsStr.append("</ol>");
+
+        int mnk = customer.indexOf('@');
+        String customerUsername = customer.substring(0, mnk);
+
+        StringBuilder bodyBuilder = new StringBuilder()
+                .append("<body>")
+                .append(customerUsername).append(", </br>Your request for seats\n").append(seatsStr)
+                .append("couldn't be executed. Please try again or our website or contact us if problems continue.")
+                .append("<br/><br/>")
+                .append("Sincerely, DNet team(Daniel and Andi)")
+                .append("</body>")
+                ;
+
+        StringBuilder finalbuilder = new StringBuilder()
+                .append("<html><!DOCTYPE html>")
+                .append(headBuilder)
+                .append(bodyBuilder)
+                .append("</html>");
+        return finalbuilder.toString();
+    }
+
 
     private String getSuccessfulMailContent(List<Ticket> tickets, String customer) {
-        StringBuilder seatsStr = new StringBuilder("<ol>");
+        StringBuilder headBuilder = new StringBuilder(
+                        "<head>\n" +
+                        "<style type=\"text/css\">\n" +
+                        ".tg  {border-collapse:collapse;border-spacing:0;}\n" +
+                        ".tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;\n" +
+                        "  overflow:hidden;padding:10px 5px;word-break:normal;}\n" +
+                        ".tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;\n" +
+                        "  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}\n" +
+                        ".tg .tg-0lax{text-align:left;vertical-align:top}\n" +
+                        "</style>\n").append("</head>");
+
+                        StringBuilder ticketsStr = new StringBuilder(
+                                "<table class=\"tg\">\n" +
+                                "<thead>\n" +
+                                "  <tr>\n" +
+                                "    <td class=\"tg-0lax\">Customer</td>\n" +
+                                "    <td class=\"tg-0lax\">Company</td>\n" +
+                                "    <td class=\"tg-0lax\">ShowID</td>\n" +
+                                "    <td class=\"tg-0lax\">TicketID</td>\n" +
+                                "  </tr>\n" +
+                                "</thead>\n" +
+                                "<tbody>\n");
+
+        StringBuilder seatsStr = new StringBuilder("<ol>\n");
         for(Ticket ticket: tickets) {
-            seatsStr.append("<li>").append(ticket.getSeatId()).append("</li>\n");
+            seatsStr.append("\t<li>").append(ticket.getSeatId()).append("</li>\n");
+            ticketsStr.append("\t<tr>").
+                    append("<td>").append(ticket.getCustomer()).append("</td>")
+                    .append("<td>").append(ticket.getCompany()).append("</td>")
+                    .append("<td>").append(ticket.getShowId()).append("</td>")
+                    .append("<td>").append(ticket.getTicketId()).append("</td>")
+                    .append("</tr>\n");
+
         }
         seatsStr.append("</ol>\n");
+        ticketsStr.append("</tbody>\n");
+        ticketsStr.append("</table>\n");
+
+
+        int mnk = customer.indexOf('@');
+        String customerUsername = customer.substring(0, mnk);
+
+
+        StringBuilder bodyBuilder = new StringBuilder("<body>")
+                .append("Dear ")
+                .append(customerUsername).append(", <br/>Your request for seats\n").append(seatsStr)
+                .append("has been successfully processed. Below you can find summary of tickets bought:\r\n\r\n").append(ticketsStr)
+                .append("<br/></br/>Sincerely, DNet team(Daniel and Andi)")
+                .append("</body>");
+
 
         StringBuilder finalStr = new StringBuilder();
-        finalStr.append("<html>\nDear ").append(customer).append(", \nYour request for seats\n").append(seatsStr.toString());
-        return null;
+
+        finalStr.append("<html>\r\n<!DOCTYPE html>\r\n<body>\r\n").append(headBuilder).append(bodyBuilder).append("</html>");
+
+        System.out.println(finalStr.toString());
+
+        return finalStr.toString();
     }
 }

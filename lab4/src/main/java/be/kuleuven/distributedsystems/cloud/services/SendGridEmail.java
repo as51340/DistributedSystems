@@ -23,7 +23,7 @@ public class SendGridEmail {
         // System.out.println("Email from: " + emailFrom);
         Email from = new Email(emailFrom);
         Email to = new Email(customer);
-        Content content = new Content("text/plain", mailContent);
+        Content content = new Content("text/html", mailContent);
         Mail mail = new Mail(from, subject, to, content);
 
         String sendGridAPI = System.getenv("EMAIL_API_KEY");
