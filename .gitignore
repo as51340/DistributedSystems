@@ -27,4 +27,4 @@ azure.txt
 # *.pdf
 
 # Deploy
-.war
+*.war
