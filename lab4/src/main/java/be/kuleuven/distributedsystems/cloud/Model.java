@@ -6,6 +6,8 @@ import be.kuleuven.distributedsystems.cloud.services.TheatreService;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -26,9 +28,15 @@ public class Model {
     this.theatreService = theatreService;
     Database database = new Database();
     this.db = database.initDB();
+    try {
+      database.initInternalShows();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public List<Show> getShows() {
+
     List<Show> shows = null;
     for (int i = 0; i < repeat; i++) {
       try {
@@ -190,7 +198,8 @@ public class Model {
       if (currentTickets == maxTickets)
         bestCustomers.add(document.getId());
     }
-
+    for(String s : bestCustomers)
+      System.out.println(s);
     return bestCustomers;
   }
 
