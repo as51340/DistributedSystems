@@ -1,234 +1,257 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
-import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
 import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import be.kuleuven.distributedsystems.cloud.services.TheatreService;
-import ch.qos.logback.core.net.SyslogOutputStream;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Component
 public class Model {
 
-    private TheatreService theatreService = null;
+  private final TheatreService theatreService;
 
-    private Firestore db;
+  private final Firestore db;
 
-    private Map<String, List<Booking>> customerBookings = new HashMap<>();
+  private final Map<String, List<Booking>> customerBookings = new HashMap<>();
 
-    private static final int repeat = 5;
+  private static final int repeat = 5;
 
-    public Model(TheatreService theatreService) {
-        this.theatreService = theatreService;
-        Database database = new Database();
-        this.db = database.initDB();
+  public Model(TheatreService theatreService) {
+    this.theatreService = theatreService;
+    Database database = new Database();
+    this.db = database.initDB();
+  }
+
+  public List<Show> getShows() {
+    List<Show> shows = null;
+    for (int i = 0; i < repeat; i++) {
+      try {
+        shows = this.theatreService.getShows();
+        break;
+      } catch (ServiceException ex) {
+        ex.printStackTrace();
+      }
+    }
+    if (shows == null) {
+      return new ArrayList<>();
+    }
+    return shows;
+  }
+
+  public Show getShow(String company, UUID showId) {
+    Show show = null;
+    for (int i = 0; i < repeat; i++) {
+      try {
+        show = this.theatreService.getShow(company, showId);
+      } catch (ServiceException ex) {
+        System.err.println("Trying to fetch show: " + showId.toString());
+      }
+    }
+    return show;
+  }
+
+  public List<LocalDateTime> getShowTimes(String company, UUID showId) {
+    List<LocalDateTime> times = null;
+    for (int i = 0; i < repeat; i++) {
+      try {
+        times = this.theatreService.getShowTimes(company, showId);
+        break;
+      } catch (ServiceException ex) {
+        // just continue
+        ex.printStackTrace();
+      }
+    }
+    if (times == null) {
+      return new ArrayList<>();
+    }
+    return times;
+  }
+
+  public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
+    List<Seat> seats = null;
+    for (int i = 0; i < repeat; i++) {
+      try {
+        seats = this.theatreService.getAvailableSeats(company, showId, time);
+        break;
+      } catch (ServiceException ex) {
+        ex.printStackTrace();
+      }
+    }
+    if (seats == null) {
+      return new ArrayList<>();
+    }
+    return seats;
+  }
+
+  public Seat getSeat(String company, UUID showId, UUID seatId) {
+    Seat seat = null;
+    for (int i = 0; i < repeat; i++) {
+      try {
+        seat = this.theatreService.getSeat(company, showId, seatId);
+        break;
+      } catch (ServiceException ex) {
+        System.out.println(ex.getMessage());
+      }
+    }
+    return seat;
+  }
+
+//  public Ticket getTicket(String company, UUID showId, UUID seatId) {
+//    Ticket ticket = null;
+//    for (int i = 0; i < repeat; i++) {
+//      try {
+//        ticket = this.theatreService.getTicket(company, showId, seatId);
+//        break;
+//      } catch (ServiceException ex) {
+//        System.out.println(ex.getMessage());
+//      }
+//    }
+//    return ticket;
+//  }
+
+  // TODO Redo to get from Firebase
+  @SuppressWarnings("unchecked")
+  public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
+    List<Booking> bookings = new ArrayList<>();
+    ApiFuture<QuerySnapshot> query = db.collection("ds").document(customer).collection("bookings").get();
+    QuerySnapshot querySnapshot = query.get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      // Get all tickets that are saved in the booking and create a list from them
+      Map<String, Object> map = document.getData();
+      List<Ticket> ticketList = new ArrayList<>();
+      for (Map.Entry<String, Object> entry : map.entrySet())
+        if(entry.getKey().equals("tickets")) {
+          List<Map<String, Object>> ticketListDb = (List<Map<String, Object>>) entry.getValue();
+          for (Map<String, Object> l : ticketListDb) {
+            UUID showID = UUID.fromString((String) l.get("showID"));
+            UUID seatID = UUID.fromString((String) l.get("seatID"));
+            UUID ticketID = UUID.fromString((String) l.get("ticketID"));
+            String company = (String) l.get("company");
+            Ticket t = new Ticket(company, showID, seatID, ticketID, customer);
+            System.out.println("showID:" + t.getShowId() + "\nseatID:" + t.getSeatId()
+                              + "\nticketID:" + t.getTicketId() + "\ncompany:" + t.getCompany());
+            ticketList.add(t);
+          }
+        }
+      // Extract all other booking data
+      UUID uuid = UUID.fromString(Objects.requireNonNull(document.getString("UUID")));
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS");
+      LocalDateTime time = LocalDateTime.parse(Objects.requireNonNull(document.getString("time")), formatter);
+
+      bookings.add(new Booking(uuid, time, ticketList, customer));
+    }
+    // ---------------------------------------------------------------//
+//    var bookings = this.customerBookings.get(customer);
+//    if (bookings == null) {
+//      return new ArrayList<>();
+//    }
+    return bookings;
+  }
+
+  // TODO Redo to get from Firebase
+  public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
+    List<Booking> allBookings = new ArrayList<>();
+    ApiFuture<QuerySnapshot> future = db.collection("ds").get();
+    List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+    for (QueryDocumentSnapshot document : documents)
+      allBookings.addAll(getBookings(document.getId()));
+    return allBookings;
+  }
+
+  // TODO Redo to get from Firebase
+  public Set<String> getBestCustomers() throws ExecutionException, InterruptedException {
+    Set<String> bestCustomers = new HashSet<>();
+    int maxTickets = 0;
+    List<Booking> costumerBookings;
+    ApiFuture<QuerySnapshot> future = db.collection("ds").get();
+    List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+    for (QueryDocumentSnapshot document : documents) {
+      costumerBookings = getBookings(document.getId());
+      int currentTickets = 0;
+      for (Booking booking : costumerBookings)
+        currentTickets += booking.getTickets().size();
+      if (currentTickets > maxTickets)
+        maxTickets = currentTickets;
     }
 
-    public List<Show> getShows() {
-        List<Show> shows = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-               shows = this.theatreService.getShows();
-               break;
-            } catch(ServiceException ex) {
-                System.err.println("Shows: " + shows);
-            }
-        }
-        if(shows == null) {
-            return new ArrayList<>();
-        }
-        return shows;
+    for (QueryDocumentSnapshot document : documents) {
+      costumerBookings = getBookings(document.getId());
+      int currentTickets = 0;
+      for (Booking booking : costumerBookings)
+        currentTickets += booking.getTickets().size();
+      if (currentTickets == maxTickets)
+        bestCustomers.add(document.getId());
     }
 
-    public Show getShow(String company, UUID showId) {
-        Show show = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-                show = this.theatreService.getShow(company, showId);
-            } catch(ServiceException ex) {
-                System.err.println("Trying to fetch show: " + showId.toString());
-            }
+    return bestCustomers;
+  }
+
+  public void confirmQuotes(List<Quote> quotes, String customer) {
+    // Create a booking.
+    // There is possibility that we reserved one ticket but cannot reserve some other ticket even after 5 repeats.
+    int cnt = 0;
+    List<Ticket> tickets = new ArrayList<>();
+    for (Quote quote : quotes) {
+      boolean reserved = false;
+      for (int i = 0; i < repeat; i++) {
+        try {
+          this.theatreService.reserveSeat(quote, customer);
+
+          reserved = true;
+          Ticket currentTicket = new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), UUID.randomUUID(), customer);
+          System.out.println("New ticket: " + currentTicket.getTicketId().toString());
+          System.out.println("New seat: " + quote.getSeatId().toString());
+          tickets.add(currentTicket);
+          break;
+        } catch (ServiceException ex) {
+          System.err.println("Seat cannot be reserved: " + quote.getSeatId());
         }
-        return show;
+      }
+      if (reserved) {
+        cnt += 1;
+      } else {
+        // Do not continue
+        break;
+      }
     }
+    if (cnt == quotes.size()) {
+      System.out.println("All seats successfully reserved!");
+      Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
 
-    public List<LocalDateTime> getShowTimes(String company, UUID showId) {
-        List<LocalDateTime> times = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-                times = this.theatreService.getShowTimes(company, showId);
-                break;
-            } catch(ServiceException ex) {
-                // just continue
-                System.err.println("Times: " + times);
-            }
-        }
-        if(times == null) {
-            return new ArrayList<>();
-        }
-        return times;
-    }
+      //Conversion to supported data types
+      Map<String, Object> convertedBooking = new HashMap<>();
+      convertedBooking.put("UUID", booking.getId().toString());
+      convertedBooking.put("time", booking.getTime().toString());
+      convertedBooking.put("customer", booking.getCustomer());
 
-    public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        List<Seat> seats = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-                seats = this.theatreService.getAvailableSeats(company, showId, time);
-                break;
-            } catch(ServiceException ex) {
-                System.err.println("Seats: " + seats);
-            }
-        }
-        if(seats == null) {
-            return new ArrayList<>();
-        }
-        return seats;
-    }
+      ArrayList<Object> convertedTickets = new ArrayList<>();
+      for(Ticket ticket : booking.getTickets()) {
+        Map<String, Object> ticketObject = new HashMap<>();
+        ticketObject.put("company", ticket.getCompany());
+        ticketObject.put("showID", ticket.getShowId().toString());
+        ticketObject.put("seatID", ticket.getSeatId().toString());
+        ticketObject.put("ticketID", ticket.getTicketId().toString());
+        ticketObject.put("customer", ticket.getCustomer());
+        convertedTickets.add(ticketObject);
+      }
+      convertedBooking.put("tickets", convertedTickets);
 
-    public Seat getSeat(String company, UUID showId, UUID seatId) {
-       Seat seat = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-                seat = this.theatreService.getSeat(company, showId, seatId);
-                break;
-            } catch(ServiceException ex) {
-                System.out.println(ex.getMessage());
-            }
-        }
-        return seat;
-    }
-
-    public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        Ticket ticket = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-                ticket = this.theatreService.getTicket(company, showId, seatId);
-                break;
-            } catch(ServiceException ex) {
-                System.out.println(ex.getMessage());
-            }
-        }
-        return ticket;
-    }
-
-    /**
-     * I don't think here are many bookings per one customer
-     * @param customer
-     * @return
-     */
-    // TODO Redo to get from Firebase
-    public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
-
-        ApiFuture<QuerySnapshot> query = db.collection("users").get();
-
-        QuerySnapshot querySnapshot = query.get();
-        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-        for (QueryDocumentSnapshot document : documents) {
-            System.out.println("User: " + document.getId());
-            System.out.println("First: " + document.getString("first"));
-            if (document.contains("middle")) {
-                System.out.println("Middle: " + document.getString("middle"));
-            }
-            System.out.println("Last: " + document.getString("last"));
-            System.out.println("Born: " + document.getLong("born"));
-        }
-        // ---------------------------------------------------------------//
-        var bookings = this.customerBookings.get(customer);
-        if(bookings == null) {
-            return new ArrayList<>();
-        }
-        return bookings;
-    }
-
-    /**
-     * I would say this is quite expensive
-     * @return
-     */
-    // TODO Redo to get from Firebase
-    public List<Booking> getAllBookings() {
-        List<Booking> allBookings = new ArrayList<>();
-        for(String customer: this.customerBookings.keySet()) {
-            allBookings.addAll(this.customerBookings.get(customer));
-        }
-        return allBookings;
-    }
-
-    // TODO Redo to get from Firebase
-    public Set<String> getBestCustomers() {
-        Set<String> bestCustomers = new HashSet<>();
-        int maxTickets = 0;
-        // Find max num of tickets
-        for(String customer: this.customerBookings.keySet()) {
-            List<Booking> currBookings = this.customerBookings.get(customer);
-            int currentTickets = 0;
-            for(Booking booking: currBookings) {
-                currentTickets += booking.getTickets().size();
-            }
-            if(currentTickets > maxTickets) {
-                maxTickets = currentTickets;
-            }
-        }
-        for(String customer: this.customerBookings.keySet()) {
-            int currentTickets = 0;
-            List<Booking> currBookings = this.customerBookings.get(customer);
-            for(Booking booking: currBookings) {
-                currentTickets += booking.getTickets().size();
-            }
-            if(currentTickets == maxTickets) {
-                bestCustomers.add(customer);
-            }
-        }
-        return bestCustomers;
-    }
-
-    public void confirmQuotes(List<Quote> quotes, String customer) {
-        // Create a booking.
-        // There is possibility that we reserved one ticket but cannot reserve some other ticket even after 5 repeats.
-        int cnt = 0;
-        List<Ticket> tickets = new ArrayList<>();
-        for(Quote quote: quotes) {
-            boolean reserved = false;
-            for(int i = 0; i < repeat; i++) {
-                try {
-                    Seat currSeat = this.theatreService.reserveSeat(quote, customer);
-
-                    reserved = true;
-                    Ticket currentTicket = new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), UUID.randomUUID(), customer);
-                    System.out.println("New ticket: " + currentTicket.getTicketId().toString());
-                    System.out.println("New seat: " + quote.getSeatId().toString());
-                    tickets.add(currentTicket);
-                    break;
-                } catch(ServiceException ex) {
-                    System.err.println("Seat cannot be reserved: " + quote.getSeatId());
-                }
-            }
-            if(reserved) {
-                cnt += 1;
-            } else {
-                // Do not continue
-                break;
-            }
-        }
-        if(cnt == quotes.size()) {
-            System.out.println("All seats successfully reserved!");
-            Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
-
-            // Saving to Firestore NoSQL DB (SetOptions.merge() dodati za merge)
-            ApiFuture<DocumentReference> future = db.collection("ds").add(booking);
-            try {
-                System.out.println("Update time : ");
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.err.println("Something when wrong when saving a booking to the database");
-            }
+      // Saving to Firestore NoSQL DB
+      db.collection("ds").document(customer).collection("bookings").add(convertedBooking);
+//            try {
+//                System.out.println("Update time : ");
+//            } catch(Exception e) {
+//                e.printStackTrace();
+//                System.err.println("Something went wrong when saving a booking to the database");
+//            }
 
 //            if(this.customerBookings.get(customer) == null) {
 //                this.customerBookings.put(customer, new ArrayList<>());
@@ -236,7 +259,7 @@ public class Model {
 //            this.customerBookings.get(customer).add(booking);
 //        } else {
 //            System.err.println("Error happened while reserving seats.");
-        }
     }
+  }
 
 }
