@@ -7,9 +7,9 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -19,7 +19,6 @@ public class Model {
   private final TheatreService theatreService;
   private final Firestore db;
   private final InternalShows internalShows;
-  private final Map<String, List<Booking>> customerBookings = new HashMap<>();
   private static final int repeat = 5;
 
   public Model(TheatreService theatreService) {
@@ -139,14 +138,14 @@ public class Model {
             UUID ticketID = UUID.fromString((String) l.get("ticketID"));
             String company = (String) l.get("company");
             Ticket t = new Ticket(company, showID, seatID, ticketID, customer);
-            System.out.println("showID:" + t.getShowId() + "\nseatID:" + t.getSeatId()
-                              + "\nticketID:" + t.getTicketId() + "\ncompany:" + t.getCompany());
+            //System.out.println("showID:" + t.getShowId() + "\nseatID:" + t.getSeatId()
+            //                  + "\nticketID:" + t.getTicketId() + "\ncompany:" + t.getCompany());
             ticketList.add(t);
           }
         }
       // Extract all other booking data
       UUID uuid = UUID.fromString(Objects.requireNonNull(document.getString("UUID")));
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
       LocalDateTime time = LocalDateTime.parse(Objects.requireNonNull(document.getString("time")), formatter);
 
       bookings.add(new Booking(uuid, time, ticketList, customer));
@@ -161,8 +160,9 @@ public class Model {
 
   public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
     List<Booking> allBookings = new ArrayList<>();
-    ApiFuture<QuerySnapshot> future = db.collection("ds").get();
-    List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+    ApiFuture<QuerySnapshot> query = db.collection("ds").get();
+    QuerySnapshot querySnapshot = query.get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
     for (QueryDocumentSnapshot document : documents)
       allBookings.addAll(getBookings(document.getId()));
     return allBookings;
@@ -172,8 +172,9 @@ public class Model {
     Set<String> bestCustomers = new HashSet<>();
     int maxTickets = 0;
     List<Booking> costumerBookings;
-    ApiFuture<QuerySnapshot> future = db.collection("ds").get();
-    List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+    ApiFuture<QuerySnapshot> query = db.collection("ds").get();
+    QuerySnapshot querySnapshot = query.get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
 
     for (QueryDocumentSnapshot document : documents) {
       costumerBookings = getBookings(document.getId());
@@ -227,7 +228,7 @@ public class Model {
     }
     if (cnt == quotes.size()) {
       System.out.println("All seats successfully reserved!");
-      Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
+      Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), tickets, customer);
 
       //Conversion to supported data types
       Map<String, Object> convertedBooking = new HashMap<>();
@@ -248,21 +249,10 @@ public class Model {
       convertedBooking.put("tickets", convertedTickets);
 
       // Saving to Firestore NoSQL DB
-      db.collection("ds").document(customer).collection("bookings").add(convertedBooking);
-//            try {
-//                System.out.println("Update time : ");
-//            } catch(Exception e) {
-//                e.printStackTrace();
-//                System.err.println("Something went wrong when saving a booking to the database");
-//            }
-
-//            if(this.customerBookings.get(customer) == null) {
-//                this.customerBookings.put(customer, new ArrayList<>());
-//            }
-//            this.customerBookings.get(customer).add(booking);
-//        } else {
-//            System.err.println("Error happened while reserving seats.");
+      Map<String ,Object> dummyMap= new HashMap<>();
+      DocumentReference df = db.collection("ds").document(customer);
+      df.set(dummyMap);  // add empty field, won't show in console
+      df.collection("bookings").add(convertedBooking);
     }
   }
-
 }
