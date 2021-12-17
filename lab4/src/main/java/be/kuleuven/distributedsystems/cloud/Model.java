@@ -28,8 +28,7 @@ public class Model {
     Database database = new Database();
     this.db = database.initDB();
 
-    InternalShows is = new InternalShows();
-    internalShows = is;
+    internalShows = new InternalShows();
     internalShows.initInternalShows(db);
   }
 
@@ -50,26 +49,33 @@ public class Model {
 
   public Show getShow(String company, UUID showId) {
     Show show = null;
-    for (int i = 0; i < repeat; i++) {
-      try {
-        show = this.theatreService.getShow(company, showId);
-      } catch (ServiceException ex) {
-        System.err.println("Trying to fetch show: " + showId.toString());
+    if(!company.equals("internal")) {
+      for (int i = 0; i < repeat; i++) {
+        try {
+          show = this.theatreService.getShow(company, showId);
+        } catch (ServiceException ex) {
+          System.err.println("Trying to fetch show: " + showId.toString());
+        }
       }
+    } else {
+      show = internalShows.getShow(showId, db);
     }
     return show;
   }
 
   public List<LocalDateTime> getShowTimes(String company, UUID showId) {
     List<LocalDateTime> times = null;
-    for (int i = 0; i < repeat; i++) {
-      try {
-        times = this.theatreService.getShowTimes(company, showId);
-        break;
-      } catch (ServiceException ex) {
-        // just continue
-        ex.printStackTrace();
+    if(!company.equals("internal")) {
+      for (int i = 0; i < repeat; i++) {
+        try {
+          times = this.theatreService.getShowTimes(company, showId);
+          break;
+        } catch (ServiceException ex) {
+          ex.printStackTrace();
+        }
       }
+    } else {
+      times = internalShows.getShowTimes(showId, db);
     }
     if (times == null) {
       return new ArrayList<>();
@@ -79,13 +85,17 @@ public class Model {
 
   public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
     List<Seat> seats = null;
-    for (int i = 0; i < repeat; i++) {
-      try {
-        seats = this.theatreService.getAvailableSeats(company, showId, time);
-        break;
-      } catch (ServiceException ex) {
-        ex.printStackTrace();
+    if(!company.equals("internal")) {
+      for (int i = 0; i < repeat; i++) {
+        try {
+          seats = this.theatreService.getAvailableSeats(company, showId, time);
+          break;
+        } catch (ServiceException ex) {
+          ex.printStackTrace();
+        }
       }
+    } else {
+      seats = internalShows.getAvailableSeats(showId, time);
     }
     if (seats == null) {
       return new ArrayList<>();
@@ -95,31 +105,21 @@ public class Model {
 
   public Seat getSeat(String company, UUID showId, UUID seatId) {
     Seat seat = null;
-    for (int i = 0; i < repeat; i++) {
-      try {
-        seat = this.theatreService.getSeat(company, showId, seatId);
-        break;
-      } catch (ServiceException ex) {
-        System.out.println(ex.getMessage());
+    if(!company.equals("internal")) {
+      for (int i = 0; i < repeat; i++) {
+        try {
+          seat = this.theatreService.getSeat(company, showId, seatId);
+          break;
+        } catch (ServiceException ex) {
+          System.out.println(ex.getMessage());
+        }
       }
+    } else {
+      seat = internalShows.getSeat(showId, seatId, db);
     }
     return seat;
   }
 
-//  public Ticket getTicket(String company, UUID showId, UUID seatId) {
-//    Ticket ticket = null;
-//    for (int i = 0; i < repeat; i++) {
-//      try {
-//        ticket = this.theatreService.getTicket(company, showId, seatId);
-//        break;
-//      } catch (ServiceException ex) {
-//        System.out.println(ex.getMessage());
-//      }
-//    }
-//    return ticket;
-//  }
-
-  // TODO Redo to get from Firebase
   @SuppressWarnings("unchecked")
   public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
     List<Booking> bookings = new ArrayList<>();
@@ -159,7 +159,6 @@ public class Model {
     return bookings;
   }
 
-  // TODO Redo to get from Firebase
   public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
     List<Booking> allBookings = new ArrayList<>();
     ApiFuture<QuerySnapshot> future = db.collection("ds").get();
@@ -169,7 +168,6 @@ public class Model {
     return allBookings;
   }
 
-  // TODO Redo to get from Firebase
   public Set<String> getBestCustomers() throws ExecutionException, InterruptedException {
     Set<String> bestCustomers = new HashSet<>();
     int maxTickets = 0;

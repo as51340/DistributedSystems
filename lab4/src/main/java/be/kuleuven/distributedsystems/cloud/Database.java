@@ -17,6 +17,7 @@ public class Database {
       try {
           firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
                   .setProjectId(projectId)
+              //TODO set emulator
                   //.setEmulatorHost("localhost:8084")
                   .setCredentials(GoogleCredentials.getApplicationDefault())//new FirestoreOptions.EmulatorCredentials())
                   .build();

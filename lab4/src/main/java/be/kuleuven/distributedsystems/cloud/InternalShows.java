@@ -1,12 +1,14 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.Booking;
+import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.jsondata.DataDTO;
 import be.kuleuven.distributedsystems.cloud.jsondata.SeatDTO;
 import be.kuleuven.distributedsystems.cloud.jsondata.ShowDTO;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
@@ -16,10 +18,15 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -92,5 +99,55 @@ public class InternalShows {
       shows.add(show);
     }
     return shows;
+  }
+
+  public Show getShow(UUID uuid, Firestore db) {
+    List<Show> shows = dbJsonToPojo(db);
+    Show showToReturn = null;
+    for(Show show : shows) {
+      if(show.getShowId().equals(uuid))
+        showToReturn = show;
+    }
+    return showToReturn;
+  }
+
+  public List<LocalDateTime> getShowTimes(UUID showId, Firestore db) {
+    Set<LocalDateTime> timesSet = new HashSet<>();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
+    ApiFuture<QuerySnapshot> query = db.collection("shows").document(showId.toString()).collection("seats").get();
+    QuerySnapshot querySnapshot = null;
+    try {
+      querySnapshot = query.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    assert querySnapshot != null;
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      timesSet.add(LocalDateTime.parse((Objects.requireNonNull(document.getString("time"))), formatter));
+    }
+    return new ArrayList<>(timesSet);
+  }
+
+  public List<Seat> getAvailableSeats(UUID showId, LocalDateTime time) {
+    return null;
+  }
+
+  public Seat getSeat(UUID showId, UUID seatId, Firestore db) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
+    ApiFuture<DocumentSnapshot> query = db.collection("shows").document(showId.toString()).collection("seats").document(seatId.toString()).get();
+    DocumentSnapshot documentSnapshot = null;
+    try {
+      documentSnapshot = query.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    assert documentSnapshot != null;
+
+    String name = documentSnapshot.getString("name");
+    double price = Double.parseDouble(Objects.requireNonNull(documentSnapshot.getString("price")));
+    String type = documentSnapshot.getString("type");
+    LocalDateTime time = LocalDateTime.parse((Objects.requireNonNull(documentSnapshot.getString("time"))), formatter);
+    return new Seat("internal", showId, seatId, time, type, name, price);
   }
 }
