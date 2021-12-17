@@ -1,10 +1,15 @@
 package be.kuleuven.distributedsystems.cloud;
 
+import be.kuleuven.distributedsystems.cloud.entities.Booking;
+import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.jsondata.DataDTO;
 import be.kuleuven.distributedsystems.cloud.jsondata.SeatDTO;
 import be.kuleuven.distributedsystems.cloud.jsondata.ShowDTO;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import org.springframework.util.ResourceUtils;
 
@@ -13,42 +18,79 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class InternalShows {
 
-  public void initInternalShows(Firestore db) throws IOException {
-    //TODO Check if they exist before adding them
-    //Are the shows in the Database?
-    //If no, add them and show them
-    //If yes, show them
+  public void initInternalShows(Firestore db){
+    ApiFuture<QuerySnapshot> query = db.collection("shows").get();
+    QuerySnapshot querySnapshot = null;
+    try {
+      querySnapshot = query.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    assert querySnapshot != null;
 
-    File file = ResourceUtils.getFile("classpath:data.json");
-    String content = new String(Files.readAllBytes(file.toPath()));
-    Gson gson = new Gson();
-    DataDTO data = gson.fromJson(content, DataDTO.class);
+    if(querySnapshot.isEmpty()) {
+      String content = null;
+      try {
+        File file = ResourceUtils.getFile("classpath:data.json");
+        content = new String(Files.readAllBytes(file.toPath()));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
 
-    for (ShowDTO show : data.getShows()) {
-      Map<String, Object> showObject = new HashMap<>();
-      showObject.put("name", show.getName());
-      showObject.put("location", show.getLocation());
-      showObject.put("image", show.getImage());
+      Gson gson = new Gson();
+      DataDTO data = gson.fromJson(content, DataDTO.class);
 
-      String showID = UUID.randomUUID().toString();
+      for (ShowDTO show : data.getShows()) {
+        Map<String, Object> showObject = new HashMap<>();
+        showObject.put("name", show.getName());
+        showObject.put("location", show.getLocation());
+        showObject.put("image", show.getImage());
 
-      db.collection("shows").document(showID).set(showObject);
+        String showID = UUID.randomUUID().toString();
 
-      for (SeatDTO seat : show.getSeats()) {
-        Map<String, Object> seatObject = new HashMap<>();
-        seatObject.put("name", seat.getName());
-        seatObject.put("price", seat.getPrice());
-        seatObject.put("time", seat.getTime());
-        seatObject.put("type", seat.getType());
+        db.collection("shows").document(showID).set(showObject);
 
-        String seatID = UUID.randomUUID().toString();
-        db.collection("shows").document(showID).collection("seats").document(seatID).set(seatObject);
+        for (SeatDTO seat : show.getSeats()) {
+          Map<String, Object> seatObject = new HashMap<>();
+          seatObject.put("name", seat.getName());
+          seatObject.put("price", seat.getPrice());
+          seatObject.put("time", seat.getTime());
+          seatObject.put("type", seat.getType());
+
+          String seatID = UUID.randomUUID().toString();
+          db.collection("shows").document(showID).collection("seats").document(seatID).set(seatObject);
+        }
       }
     }
+  }
+
+  public List<Show> dbJsonToPojo(Firestore db) {
+    List<Show> shows = new ArrayList<>();
+    ApiFuture<QuerySnapshot> query = db.collection("shows").get();
+    QuerySnapshot querySnapshot = null;
+    try {
+      querySnapshot = query.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    assert querySnapshot != null;
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      // documentID is showID, document is a specific show, there are two internal shows
+      UUID showID = UUID.fromString(document.getId());
+      String name = document.getString("name");
+      String location = document.getString("location");
+      String image = document.getString("image");
+      Show show = new Show("internal", showID, name, location, image);
+      shows.add(show);
+    }
+    return shows;
   }
 }

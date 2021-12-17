@@ -17,39 +17,34 @@ import java.util.concurrent.ExecutionException;
 public class Model {
 
   private final TheatreService theatreService;
-
   private final Firestore db;
-
+  private final InternalShows internalShows;
   private final Map<String, List<Booking>> customerBookings = new HashMap<>();
-
   private static final int repeat = 5;
 
   public Model(TheatreService theatreService) {
     this.theatreService = theatreService;
+
     Database database = new Database();
-    InternalShows is = new InternalShows();
     this.db = database.initDB();
-    try {
-      is.initInternalShows(db);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+
+    InternalShows is = new InternalShows();
+    internalShows = is;
+    internalShows.initInternalShows(db);
   }
 
   public List<Show> getShows() {
-
-    List<Show> shows = null;
+    List<Show> shows = new ArrayList<>();
     for (int i = 0; i < repeat; i++) {
       try {
-        shows = this.theatreService.getShows();
+        shows.addAll(this.theatreService.getShows());
         break;
       } catch (ServiceException ex) {
         ex.printStackTrace();
       }
     }
-    if (shows == null) {
-      return new ArrayList<>();
-    }
+    //Add internal shows as well
+    shows.addAll(internalShows.dbJsonToPojo(db));
     return shows;
   }
 
