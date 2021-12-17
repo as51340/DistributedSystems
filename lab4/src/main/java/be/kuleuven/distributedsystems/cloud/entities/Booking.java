@@ -16,6 +16,10 @@ public class Booking { // Collection of tickets
     private List<Ticket> tickets;
     private String customer;
 
+    public Booking() {
+
+    }
+
     public Booking(UUID id, LocalDateTime time, List<Ticket> tickets, String customer) {
         this.id = id;
         this.time = time;
