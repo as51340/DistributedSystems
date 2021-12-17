@@ -132,14 +132,17 @@ public class Model {
   }
 
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        Ticket ticket = null;
-        for(int i = 0; i < repeat; i++) {
-            try {
-                ticket = this.theatreService.getTicket(company, showId, seatId);
-                break;
-            } catch(ServiceException ex) {
-                // System.out.println(ex.getMessage());
-            }
+      Ticket ticket = null;
+      for (int i = 0; i < repeat; i++) {
+        try {
+          ticket = this.theatreService.getTicket(company, showId, seatId);
+          break;
+        } catch (ServiceException ex) {
+          // System.out.println(ex.getMessage());
+        }
+      }
+      return ticket;
+    }
 
           @SuppressWarnings("unchecked")
           public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
