@@ -1,9 +1,10 @@
-package be.kuleuven.distributedsystems.cloud.entities;
+package be.kuleuven.distributedsystems.cloud.jsondata;
+
+import be.kuleuven.distributedsystems.cloud.jsondata.SeatDTO;
 
 import java.util.List;
 
 public class ShowDTO {
-  private String showID;
   private String name;
   private String location;
   private String image;
@@ -39,18 +40,5 @@ public class ShowDTO {
 
   public void setSeats(List<SeatDTO> seats) {
     this.seats = seats;
-  }
-  /*
-  * Model database such that new type of show is a new collection, take from
-  * that collection and put on website
-  *
-   */
-
-  public String getShowID() {
-    return showID;
-  }
-
-  public void setShowID(String showID) {
-    this.showID = showID;
   }
 }

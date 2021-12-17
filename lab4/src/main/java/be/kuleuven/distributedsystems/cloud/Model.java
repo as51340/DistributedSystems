@@ -27,9 +27,10 @@ public class Model {
   public Model(TheatreService theatreService) {
     this.theatreService = theatreService;
     Database database = new Database();
+    InternalShows is = new InternalShows();
     this.db = database.initDB();
     try {
-      database.initInternalShows();
+      is.initInternalShows(db);
     } catch (IOException e) {
       e.printStackTrace();
     }

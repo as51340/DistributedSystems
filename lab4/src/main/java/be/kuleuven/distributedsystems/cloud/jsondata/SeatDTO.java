@@ -1,6 +1,11 @@
-package be.kuleuven.distributedsystems.cloud.entities;
+package be.kuleuven.distributedsystems.cloud.jsondata;
 
 public class SeatDTO {
+  private String name;
+  private String price;
+  private String time;
+  private String type;
+
   public String getName() {
     return name;
   }
@@ -33,8 +38,5 @@ public class SeatDTO {
     this.type = type;
   }
 
-  private String name;
-  private String price;
-  private String time;
-  private String type;
+
 }
