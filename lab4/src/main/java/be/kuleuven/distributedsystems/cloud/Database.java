@@ -11,6 +11,9 @@ public class Database {
     @Autowired
     private String projectId;
 
+    @Autowired
+    private boolean isProduction;
+
     public Firestore initDB() {
       FirestoreOptions firestoreOptions =
               null;
