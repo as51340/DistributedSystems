@@ -40,7 +40,7 @@ public class SendGridEmail {
             System.out.println(response.getBody());
             System.out.println(response.getHeaders());
         } catch (IOException ex) {
-            System.out.println("Exception catched!!!");
+            System.out.println("Exception caught!!!");
             ex.printStackTrace();
         }
     }

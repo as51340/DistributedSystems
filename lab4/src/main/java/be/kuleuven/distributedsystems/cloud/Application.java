@@ -32,6 +32,7 @@ import reactor.netty.http.client.HttpClient;
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 @SpringBootApplication
@@ -39,7 +40,7 @@ public class Application {
 
     private final String appURL = "https://ds-theatres.ey.r.appspot.com";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         System.setProperty("server.port", System.getenv().getOrDefault("PORT", "8080"));
 
         // Apache JSP scans by default all JARs, which is not necessary, so disable it

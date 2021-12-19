@@ -64,7 +64,6 @@ Ask about schema
 1. Ask what should we check for subject? Is it okay just to check that is non empty?
 2. How to get auth_time for token verification?
 3. What to do with that uid?
-4. Use the value of max-age in the Cache-Control header of the response from that endpoint to know when to refresh the public keys... Any time in the application or?
 
 
 
