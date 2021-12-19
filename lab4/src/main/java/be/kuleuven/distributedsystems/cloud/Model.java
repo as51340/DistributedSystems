@@ -1,7 +1,6 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
-import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
 import be.kuleuven.distributedsystems.cloud.services.SendGridEmail;
 import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import be.kuleuven.distributedsystems.cloud.services.TheatreService;
@@ -18,17 +17,14 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class Model {
 
-    // Theatre service for fetching stuff
-    private TheatreService theatreService = null;
+  // Theatre service for fetching stuff
+  private final TheatreService theatreService;
 
-    // Currently save bookings in memory
-    private Map<String, List<Booking>> customerBookings = new HashMap<>();
+  // SendGrid setup
+  private final SendGridEmail sendGrid;
 
-    // SendGrid setup
-    private SendGridEmail sendGrid;
-
-    // Number of times that we will try to contact theatre companies
-    private static final int repeat = 5;
+  // Number of times that we will try to contact theatre companies
+  private static final int repeat = 5;
   private final Firestore db;
   private final InternalShows internalShows;
 
@@ -60,7 +56,7 @@ public class Model {
 
   public Show getShow(String company, UUID showId) {
     Show show = null;
-    if(!company.equals("internal")) {
+    if (!company.equals("internal")) {
       for (int i = 0; i < repeat; i++) {
         try {
           show = this.theatreService.getShow(company, showId);
@@ -76,7 +72,7 @@ public class Model {
 
   public List<LocalDateTime> getShowTimes(String company, UUID showId) {
     List<LocalDateTime> times = null;
-    if(!company.equals("internal")) {
+    if (!company.equals("internal")) {
       for (int i = 0; i < repeat; i++) {
         try {
           times = this.theatreService.getShowTimes(company, showId);
@@ -96,7 +92,7 @@ public class Model {
 
   public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
     List<Seat> seats = null;
-    if(!company.equals("internal")) {
+    if (!company.equals("internal")) {
       for (int i = 0; i < repeat; i++) {
         try {
           seats = this.theatreService.getAvailableSeats(company, showId, time);
@@ -116,7 +112,7 @@ public class Model {
 
   public Seat getSeat(String company, UUID showId, UUID seatId) {
     Seat seat = null;
-    if(!company.equals("internal")) {
+    if (!company.equals("internal")) {
       for (int i = 0; i < repeat; i++) {
         try {
           seat = this.theatreService.getSeat(company, showId, seatId);
@@ -131,167 +127,240 @@ public class Model {
     return seat;
   }
 
-    public Ticket getTicket(String company, UUID showId, UUID seatId) {
-      Ticket ticket = null;
-      for (int i = 0; i < repeat; i++) {
-        try {
-          ticket = this.theatreService.getTicket(company, showId, seatId);
-          break;
-        } catch (ServiceException ex) {
-          // System.out.println(ex.getMessage());
+  @SuppressWarnings("unchecked")
+  public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
+    List<Booking> bookings = new ArrayList<>();
+    ApiFuture<QuerySnapshot> query = db.collection("ds").document(customer).collection("bookings").get();
+    QuerySnapshot querySnapshot = query.get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      // Get all tickets that are saved in the booking and create a list from them
+      Map<String, Object> map = document.getData();
+      List<Ticket> ticketList = new ArrayList<>();
+      for (Map.Entry<String, Object> entry : map.entrySet())
+        if (entry.getKey().equals("tickets")) {
+          List<Map<String, Object>> ticketListDb = (List<Map<String, Object>>) entry.getValue();
+          for (Map<String, Object> l : ticketListDb) {
+            UUID showID = UUID.fromString((String) l.get("showID"));
+            UUID seatID = UUID.fromString((String) l.get("seatID"));
+            UUID ticketID = UUID.fromString((String) l.get("ticketID"));
+            String company = (String) l.get("company");
+            Ticket t = new Ticket(company, showID, seatID, ticketID, customer);
+            ticketList.add(t);
+          }
         }
-      }
-      return ticket;
+      // Extract all other booking data
+      UUID uuid = UUID.fromString(Objects.requireNonNull(document.getString("UUID")));
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
+      LocalDateTime time = LocalDateTime.parse(Objects.requireNonNull(document.getString("time")), formatter);
+
+      bookings.add(new Booking(uuid, time, ticketList, customer));
+    }
+    return bookings;
+  }
+
+  public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
+    List<Booking> allBookings = new ArrayList<>();
+    ApiFuture<QuerySnapshot> query = db.collection("ds").get();
+    QuerySnapshot querySnapshot = query.get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    for (QueryDocumentSnapshot document : documents)
+      allBookings.addAll(getBookings(document.getId()));
+    return allBookings;
+  }
+
+  public Set<String> getBestCustomers() throws ExecutionException, InterruptedException {
+    Set<String> bestCustomers = new HashSet<>();
+    int maxTickets = 0;
+    List<Booking> costumerBookings;
+    ApiFuture<QuerySnapshot> query = db.collection("ds").get();
+    QuerySnapshot querySnapshot = query.get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+
+    for (QueryDocumentSnapshot document : documents) {
+      costumerBookings = getBookings(document.getId());
+      int currentTickets = 0;
+      for (Booking booking : costumerBookings)
+        currentTickets += booking.getTickets().size();
+      if (currentTickets > maxTickets)
+        maxTickets = currentTickets;
     }
 
-          @SuppressWarnings("unchecked")
-          public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
-            List<Booking> bookings = new ArrayList<>();
-            ApiFuture<QuerySnapshot> query = db.collection("ds").document(customer).collection("bookings").get();
-            QuerySnapshot querySnapshot = query.get();
-            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-            for (QueryDocumentSnapshot document : documents) {
-              // Get all tickets that are saved in the booking and create a list from them
-              Map<String, Object> map = document.getData();
-              List<Ticket> ticketList = new ArrayList<>();
-              for (Map.Entry<String, Object> entry : map.entrySet())
-                if(entry.getKey().equals("tickets")) {
-                  List<Map<String, Object>> ticketListDb = (List<Map<String, Object>>) entry.getValue();
-                  for (Map<String, Object> l : ticketListDb) {
-                    UUID showID = UUID.fromString((String) l.get("showID"));
-                    UUID seatID = UUID.fromString((String) l.get("seatID"));
-                    UUID ticketID = UUID.fromString((String) l.get("ticketID"));
-                    String company = (String) l.get("company");
-                    Ticket t = new Ticket(company, showID, seatID, ticketID, customer);
-                    //System.out.println("showID:" + t.getShowId() + "\nseatID:" + t.getSeatId()
-                    //                  + "\nticketID:" + t.getTicketId() + "\ncompany:" + t.getCompany());
-                    ticketList.add(t);
-                  }
-                }
-              // Extract all other booking data
-              UUID uuid = UUID.fromString(Objects.requireNonNull(document.getString("UUID")));
-              DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
-              LocalDateTime time = LocalDateTime.parse(Objects.requireNonNull(document.getString("time")), formatter);
+    for (QueryDocumentSnapshot document : documents) {
+      costumerBookings = getBookings(document.getId());
+      int currentTickets = 0;
+      for (Booking booking : costumerBookings)
+        currentTickets += booking.getTickets().size();
+      if (currentTickets == maxTickets)
+        bestCustomers.add(document.getId());
+    }
+    return bestCustomers;
+  }
 
-              bookings.add(new Booking(uuid, time, ticketList, customer));
-            }
-            // ---------------------------------------------------------------//
-//    var bookings = this.customerBookings.get(customer);
-//    if (bookings == null) {
-//      return new ArrayList<>();
-//    }
-            return bookings;
+  public void confirmQuotes(List<Quote> quotes, String customer) {
+    int cnt = 0;
+    List<Ticket> tickets = new ArrayList<>();
+    for(Quote quote: quotes) {
+      boolean reserved = false;
+      for(int i = 0; i < repeat; i++) {
+        try {
+          Ticket currentTicket = this.theatreService.putTicket(quote, customer);
+          reserved = true;
+          tickets.add(currentTicket);
+          break;
+        } catch(ServiceException ex) {
+          System.err.println("Seat cannot be reserved: " + quote.getSeatId());
+        }
+      }
+      if(reserved) {
+        cnt += 1;
+      } else {
+        break;
+      }
+    }
+    if(cnt == quotes.size()) {
+      System.out.println("All seats successfully reserved, sending mail to customer and adding booking to memory...");
+      Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), tickets, customer);
+
+      //Conversion to supported data types
+      Map<String, Object> convertedBooking = new HashMap<>();
+      convertedBooking.put("UUID", booking.getId().toString());
+      convertedBooking.put("time", booking.getTime().toString());
+      convertedBooking.put("customer", booking.getCustomer());
+
+      ArrayList<Object> convertedTickets = new ArrayList<>();
+      for(Ticket ticket : booking.getTickets()) {
+        Map<String, Object> ticketObject = new HashMap<>();
+        ticketObject.put("company", ticket.getCompany());
+        ticketObject.put("showID", ticket.getShowId().toString());
+        ticketObject.put("seatID", ticket.getSeatId().toString());
+        ticketObject.put("ticketID", ticket.getTicketId().toString());
+        ticketObject.put("customer", ticket.getCustomer());
+        convertedTickets.add(ticketObject);
+      }
+      convertedBooking.put("tickets", convertedTickets);
+
+      // Saving to Firestore NoSQL DB
+      Map<String ,Object> dummyMap= new HashMap<>();
+      DocumentReference df = db.collection("ds").document(customer);
+      df.set(dummyMap);  // add empty field, won't show in console
+      df.collection("bookings").add(convertedBooking);
+
+      String mailContent = this.getSuccessfulMailContent(tickets, customer);
+      sendGrid.sendEmail("Ticket reservation success", mailContent, customer);
+    } else {
+      System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
+      for(Ticket ticket: tickets) {
+        boolean deleted = false;
+        for(int i = 0; i < repeat; i++) {
+          try {
+            this.theatreService.deleteTicket(ticket);
+            System.out.println("Deleted ticket: " + ticket.getTicketId().toString());
+            deleted = true;
+            break;
+          } catch(ServiceException | NullPointerException ex) {
+              ex.printStackTrace();
           }
+        }
+        if(!deleted) {
+          System.out.println("Failed to delete old ticket, further action needed...");
+        }
+      }
+      sendGrid.sendEmail("Ticket reservation failure",
+          this.getUnSuccessfulMailContent(quotes, customer),
+          customer);
+    }
+  }
 
-          public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
-            List<Booking> allBookings = new ArrayList<>();
-            ApiFuture<QuerySnapshot> query = db.collection("ds").get();
-            QuerySnapshot querySnapshot = query.get();
-            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-            for (QueryDocumentSnapshot document : documents)
-              allBookings.addAll(getBookings(document.getId()));
-            return allBookings;
-          }
+  private String getUnSuccessfulMailContent(List<Quote> quotes, String customer) {
+    StringBuilder headBuilder = new StringBuilder()
+        .append("<head>")
+        .append("</head>");
+    StringBuilder seatsStr = new StringBuilder()
+        .append("<ol>");
+    for (Quote quote : quotes) {
+      seatsStr.append("<li>").append(quote.getSeatId()).append("</li>");
+    }
+    seatsStr.append("</ol>");
 
-          public Set<String> getBestCustomers() throws ExecutionException, InterruptedException {
-            Set<String> bestCustomers = new HashSet<>();
-            int maxTickets = 0;
-            List<Booking> costumerBookings;
-            ApiFuture<QuerySnapshot> query = db.collection("ds").get();
-            QuerySnapshot querySnapshot = query.get();
-            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    int mnk = customer.indexOf('@');
+    String customerUsername = customer.substring(0, mnk);
 
-            for (QueryDocumentSnapshot document : documents) {
-              costumerBookings = getBookings(document.getId());
-              int currentTickets = 0;
-              for (Booking booking : costumerBookings)
-                currentTickets += booking.getTickets().size();
-              if (currentTickets > maxTickets)
-                maxTickets = currentTickets;
-            }
+    StringBuilder bodyBuilder = new StringBuilder()
+        .append("<body>")
+        .append(customerUsername).append(", </br>Your request for seats\n").append(seatsStr)
+        .append("couldn't be executed. Please try again or our website or contact us if problems continue.")
+        .append("<br/><br/>")
+        .append("Sincerely, DNet team(Daniel and Andi)")
+        .append("</body>");
 
-            for (QueryDocumentSnapshot document : documents) {
-              costumerBookings = getBookings(document.getId());
-              int currentTickets = 0;
-              for (Booking booking : costumerBookings)
-                currentTickets += booking.getTickets().size();
-              if (currentTickets == maxTickets)
-                bestCustomers.add(document.getId());
-            }
-            for(String s : bestCustomers)
-              System.out.println(s);
-            return bestCustomers;
-          }
+    StringBuilder finalbuilder = new StringBuilder()
+        .append("<html><!DOCTYPE html>")
+        .append(headBuilder)
+        .append(bodyBuilder)
+        .append("</html>");
+    return finalbuilder.toString();
+  }
 
-          public void confirmQuotes(List<Quote> quotes, String customer) {
-            // TODO: reserve all seats for the given quotes
-            // Create a booking.
-            // There is possibility that we reserved one ticket but cannot reserve some other ticket even after 5 repeats.
-            int cnt = 0;
-            List<Ticket> tickets = new ArrayList<>();
-            for(Quote quote: quotes) {
-              boolean reserved = false;
-              for(int i = 0; i < repeat; i++) {
-                try {
-                  Ticket currentTicket = this.theatreService.putTicket(quote, customer);
-                  // System.out.println("Put ticket: ");
-                  // System.out.println("Show ID: " + currentTicket.getShowId().toString());
-                  // System.out.println("Seat ID: " + currentTicket.getSeatId().toString());
-                  // System.out.println("Ticket ID: " + currentTicket.getTicketId().toString());
-                  // System.out.println("Company: " + currentTicket.getCompany());
-                  // System.out.println("Customer: " + currentTicket.getCustomer());
-                  // System.out.println();
-                  // Ticket getTicket = this.theatreService.getTicket(quote.getCompany(), quote.getShowId(), quote.getSeatId());
-                  // System.out.println("Get ticket: ");
-                  // System.out.println("Show ID: " + getTicket.getShowId().toString());
-                  // System.out.println("Seat ID: " + getTicket.getSeatId().toString());
-                  // System.out.println("Ticket ID: " + getTicket.getTicketId().toString());
-                  // System.out.println("Company: " + getTicket.getCompany());
-                  // System.out.println("Customer: " + getTicket.getCustomer());
-                  // System.out.println();
-                  reserved = true;
-                  tickets.add(currentTicket);
-                  break;
-                } catch(ServiceException ex) {
-                  System.err.println("Seat cannot be reserved: " + quote.getSeatId());
-                }
-              }
-              if(reserved) {
-                cnt += 1;
-              } else {
-                break;
-              }
-            }
-            if(cnt == quotes.size()) {
-              System.out.println("All seats successfully reserved, sending mail to customer and adding booking to memory...");
-              Booking booking = new Booking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
-              this.customerBookings.computeIfAbsent(customer, k -> new ArrayList<>());
-              this.customerBookings.get(customer).add(booking);
-              // TODO try to add HTML to mail, return to him list of generated tickets
-              sendGrid.sendEmail("Ticket reservation success", "Dear customer, all your tickets have been successfully confirmed...", customer);
-            } else {
-              // TODO delete already reserved tickets
-              System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
-              for(Ticket ticket: tickets) {
-                boolean deleted = false;
-                for(int i = 0; i < repeat; i++) {
-                  try {
-                    String res = this.theatreService.deleteTicket(ticket);
-                    System.out.println("Delete result");
-                    System.out.println(res);
-                    deleted = true;
-                    break;
-                  } catch(ServiceException | NullPointerException ex) {
 
-                  }
-                }
-                if(!deleted) {
-                  System.out.println("Failed to delete old ticket, further action needed...");
-                }
-              }
-              // TODO try to add HTML to mail
-              sendGrid.sendEmail("Ticket reservation failure", "Dear customer, your tickets couldn't be processed, please try to do again or feel free to contact us for further questions...",
-                  customer);
-            }
-          }
+  private String getSuccessfulMailContent(List<Ticket> tickets, String customer) {
+    StringBuilder headBuilder = new StringBuilder(
+        "<head>\n" +
+            "<style type=\"text/css\">\n" +
+            ".tg  {border-collapse:collapse;border-spacing:0;}\n" +
+            ".tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;\n" +
+            "  overflow:hidden;padding:10px 5px;word-break:normal;}\n" +
+            ".tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;\n" +
+            "  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}\n" +
+            ".tg .tg-0lax{text-align:left;vertical-align:top}\n" +
+            "</style>\n").append("</head>");
+
+    StringBuilder ticketsStr = new StringBuilder(
+        "<table class=\"tg\">\n" +
+            "<thead>\n" +
+            "  <tr>\n" +
+            "    <td class=\"tg-0lax\">Customer</td>\n" +
+            "    <td class=\"tg-0lax\">Company</td>\n" +
+            "    <td class=\"tg-0lax\">ShowID</td>\n" +
+            "    <td class=\"tg-0lax\">TicketID</td>\n" +
+            "  </tr>\n" +
+            "</thead>\n" +
+            "<tbody>\n");
+
+    StringBuilder seatsStr = new StringBuilder("<ol>\n");
+    for (Ticket ticket : tickets) {
+      seatsStr.append("\t<li>").append(ticket.getSeatId()).append("</li>\n");
+      ticketsStr.append("\t<tr>").
+          append("<td>").append(ticket.getCustomer()).append("</td>")
+          .append("<td>").append(ticket.getCompany()).append("</td>")
+          .append("<td>").append(ticket.getShowId()).append("</td>")
+          .append("<td>").append(ticket.getTicketId()).append("</td>")
+          .append("</tr>\n");
+
+    }
+    seatsStr.append("</ol>\n");
+    ticketsStr.append("</tbody>\n");
+    ticketsStr.append("</table>\n");
+
+
+    int mnk = customer.indexOf('@');
+    String customerUsername = customer.substring(0, mnk);
+
+
+    StringBuilder bodyBuilder = new StringBuilder("<body>")
+        .append("Dear ")
+        .append(customerUsername).append(", <br/>Your request for seats\n").append(seatsStr)
+        .append("has been successfully processed. Below you can find summary of tickets bought:\r\n\r\n").append(ticketsStr)
+        .append("<br/></br/>Sincerely, DNet team(Daniel and Andi)")
+        .append("</body>");
+
+
+    StringBuilder finalStr = new StringBuilder();
+
+    finalStr.append("<html>\r\n<!DOCTYPE html>\r\n<body>\r\n").append(headBuilder).append(bodyBuilder).append("</html>");
+
+    System.out.println(finalStr.toString());
+
+    return finalStr.toString();
+  }
 }
