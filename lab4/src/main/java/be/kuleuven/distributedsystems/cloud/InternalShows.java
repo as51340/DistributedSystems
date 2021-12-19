@@ -16,8 +16,11 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import org.springframework.util.ResourceUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,16 +47,19 @@ public class InternalShows {
     assert querySnapshot != null;
 
     if(querySnapshot.isEmpty()) {
-      String content = null;
-      try {
-        File file = ResourceUtils.getFile("classpath:data.json");
-        content = new String(Files.readAllBytes(file.toPath()));
-      } catch (IOException e) {
-        e.printStackTrace();
+      InputStream ioStream = this.getClass()
+          .getClassLoader()
+          .getResourceAsStream("data.json");
+
+      if (ioStream == null) {
+        throw new IllegalArgumentException("data.json" + " is not found");
       }
 
+      InputStreamReader isr = new InputStreamReader(ioStream);
+      BufferedReader br = new BufferedReader(isr);
+
       Gson gson = new Gson();
-      DataDTO data = gson.fromJson(content, DataDTO.class);
+      DataDTO data = gson.fromJson(br, DataDTO.class);
 
       for (ShowDTO show : data.getShows()) {
         Map<String, Object> showObject = new HashMap<>();
