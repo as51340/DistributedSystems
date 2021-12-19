@@ -1,6 +1,7 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.Booking;
+import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.jsondata.DataDTO;
@@ -70,6 +71,7 @@ public class InternalShows {
           seatObject.put("price", seat.getPrice());
           seatObject.put("time", seat.getTime());
           seatObject.put("type", seat.getType());
+          seatObject.put("available", "true");
 
           String seatID = UUID.randomUUID().toString();
           db.collection("shows").document(showID).collection("seats").document(seatID).set(seatObject);
@@ -129,13 +131,34 @@ public class InternalShows {
     return new ArrayList<>(timesSet);
   }
 
-  public List<Seat> getAvailableSeats(UUID showId, LocalDateTime time) {
-    return null;
+  public List<Seat> getAvailableSeats(UUID showId, LocalDateTime time, Firestore db) {
+    List<Seat> availableSeats = new ArrayList<>();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
+    String formattedDateTime = time.format(formatter);
+    ApiFuture<QuerySnapshot> query = db.collection("shows").document(showId.toString()).collection("seats").get();
+    QuerySnapshot querySnapshot = null;
+    try {
+      querySnapshot = query.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    assert querySnapshot != null;
+    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+    for (QueryDocumentSnapshot document : documents) {
+      if(Objects.equals(document.getString("available"), "true") && Objects.equals(document.getString("time"), formattedDateTime)) {
+        String name = document.getString("name");
+        double price = Double.parseDouble(Objects.requireNonNull(document.getString("price")));
+        String type = document.getString("type");
+        availableSeats.add(new Seat("internal", showId, UUID.fromString(document.getId()), time, type, name, price));
+      }
+    }
+    return availableSeats;
   }
 
   public Seat getSeat(UUID showId, UUID seatId, Firestore db) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
-    ApiFuture<DocumentSnapshot> query = db.collection("shows").document(showId.toString()).collection("seats").document(seatId.toString()).get();
+    ApiFuture<DocumentSnapshot> query = db.collection("shows").document(showId.toString()).
+        collection("seats").document(seatId.toString()).get();
     DocumentSnapshot documentSnapshot = null;
     try {
       documentSnapshot = query.get();
@@ -149,5 +172,29 @@ public class InternalShows {
     String type = documentSnapshot.getString("type");
     LocalDateTime time = LocalDateTime.parse((Objects.requireNonNull(documentSnapshot.getString("time"))), formatter);
     return new Seat("internal", showId, seatId, time, type, name, price);
+  }
+
+  public Ticket putTicket(Quote quote, String customer, Firestore db) {
+    Map<String, Object> ticketObject = new HashMap<>();
+    ticketObject.put("company", quote.getCompany());
+    ticketObject.put("showId", quote.getShowId().toString());
+    ticketObject.put("seatId", quote.getSeatId().toString());
+    ticketObject.put("customer", customer);
+    UUID ticketId = UUID.randomUUID();
+
+    db.collection("ds").document(customer).collection("tickets")
+        .document(ticketId.toString()).set(ticketObject);
+    return new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), ticketId, customer);
+  }
+
+  public void deleteTicket(Ticket ticket, Firestore db) {
+    db.collection("ds").document(ticket.getCustomer()).collection("tickets")
+        .document(ticket.getTicketId().toString()).delete();
+  }
+
+  public void setUnavailable(List<Ticket> tickets, Firestore db) {
+    for(Ticket t : tickets)
+      db.collection("shows").document(t.getShowId().toString()).collection("seats")
+          .document(t.getSeatId().toString()).update("available", "false");
   }
 }

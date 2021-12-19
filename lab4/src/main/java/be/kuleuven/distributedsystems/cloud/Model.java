@@ -102,7 +102,7 @@ public class Model {
         }
       }
     } else {
-      seats = internalShows.getAvailableSeats(showId, time);
+      seats = internalShows.getAvailableSeats(showId, time, db);
     }
     if (seats == null) {
       return new ArrayList<>();
@@ -196,7 +196,7 @@ public class Model {
     }
     return bestCustomers;
   }
-
+  // TODO Add check before booking if all of them are available and add runTransaction
   public void confirmQuotes(List<Quote> quotes, String customer) {
     int cnt = 0;
     List<Ticket> tickets = new ArrayList<>();
@@ -204,7 +204,12 @@ public class Model {
       boolean reserved = false;
       for(int i = 0; i < repeat; i++) {
         try {
-          Ticket currentTicket = this.theatreService.putTicket(quote, customer);
+          Ticket currentTicket;
+          if(!quote.getCompany().equals("internal"))
+            //TODO MAKE SURE TICKETS ARE AVAILABLE
+            currentTicket = this.theatreService.putTicket(quote, customer);
+          else
+            currentTicket = internalShows.putTicket(quote, customer, db);
           reserved = true;
           tickets.add(currentTicket);
           break;
@@ -246,6 +251,9 @@ public class Model {
       df.set(dummyMap);  // add empty field, won't show in console
       df.collection("bookings").add(convertedBooking);
 
+      //Set all booked seat availabilities to false
+      internalShows.setUnavailable(tickets, db);
+
       String mailContent = this.getSuccessfulMailContent(tickets, customer);
       sendGrid.sendEmail("Ticket reservation success", mailContent, customer);
     } else {
@@ -254,7 +262,10 @@ public class Model {
         boolean deleted = false;
         for(int i = 0; i < repeat; i++) {
           try {
-            this.theatreService.deleteTicket(ticket);
+            if(!ticket.getCompany().equals("internal"))
+              this.theatreService.deleteTicket(ticket);
+            else
+              internalShows.deleteTicket(ticket, db);
             System.out.println("Deleted ticket: " + ticket.getTicketId().toString());
             deleted = true;
             break;
