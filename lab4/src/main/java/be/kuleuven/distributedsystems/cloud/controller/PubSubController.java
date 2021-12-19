@@ -34,6 +34,7 @@ public class PubSubController {
 
     @PostMapping("/pubsub")
     public ResponseEntity<Void> ConfirmQuotesHandler(HttpServletRequest request) throws IOException {
+
         String requestBody = request.getReader().lines().collect(Collectors.joining("\n"));
         // System.out.println("Request body: " + requestBody);
         JsonElement jsonRoot = jsonParser.parse(requestBody);

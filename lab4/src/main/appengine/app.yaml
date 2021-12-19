@@ -1,21 +1,27 @@
 runtime: java11
 entrypoint: java -Xmx512m -jar cloud-1.0.war
-instance_class: F2
+instance_class: F2  # automatic scaling setup, by using F2 one can optimize max_concurrent_requests
 
 inbound_services:
-  - warmup
-
+  - warmup  # enables warmup requests. Used for reducing request and response latency during the time when your app's code is being loaded to a newly created instance.
+# App engine will load code during the redeploy, when new instance is created or during the maintenance and repair or hardware
+# Wahat warmup request does, it loads code of application to a newly created instance before any live request comes.
+# Required. A list of URL patterns and descriptions of how they should be handled. App Engine can handle URLs by executing application code, or by serving static files uploaded with the code, such as images, CSS, or JavaScript.
 handlers:
   - url: /.*
     secure: always
     script: auto
 
 automatic_scaling:
+  # max_instances: to limit the cost of an application
+  # max_idle_instances: basically how to behave when load of requests decreases or increasežs
   max_concurrent_requests: 50
-  min_pending_latency: 5000ms
-  max_pending_latency: 15000ms
-  target_cpu_utilization: 0.9
-  target_throughput_utilization: 0.9
+  min_pending_latency: 1000ms
+  max_pending_latency: 3000ms
+  target_cpu_utilization: 0.6  # lower values: more performance but also more cost, higher vales: less performance but also less cost
+  target_throughput_utilization: 0.9  # when number of concurrent requests reaches n = max_concurrent_requests*target_throughput_utilization, new instance will be try to start
+  min_idle_instances: 1
+
 
 env_variables:
   EMAIL_API_KEY: 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

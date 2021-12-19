@@ -185,6 +185,7 @@ public class Model {
         // Create a booking.
         // There is possibility that we reserved one ticket but cannot reserve some other ticket even after 5 repeats.
         int cnt = 0;
+
         List<Ticket> tickets = new ArrayList<>();
         for(Quote quote: quotes) {
             boolean reserved = false;
@@ -311,7 +312,6 @@ public class Model {
 
         int mnk = customer.indexOf('@');
         String customerUsername = customer.substring(0, mnk);
-
 
         StringBuilder bodyBuilder = new StringBuilder("<body>")
                 .append("Dear ")

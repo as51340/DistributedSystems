@@ -119,6 +119,7 @@ public class PubSubHandler {
                 String jsonInString = new Gson().toJson(message);
                 //ByteString data = message.toByteString();
                 ByteString data = ByteString.copyFrom(jsonInString, StandardCharsets.UTF_8);
+                // System.out.println("Number of bytes sent: " + data.toByteArray().length);
                 pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
             }
 
