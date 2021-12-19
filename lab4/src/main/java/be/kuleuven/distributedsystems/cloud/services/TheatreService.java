@@ -220,14 +220,8 @@ public class TheatreService {
      * @param ticket already created ticket
      * @return
      */
-    public String deleteTicket(Ticket ticket) {
-        System.out.println("Delete ticket properties...");
-        System.out.println(ticket.getCompany());
-        System.out.println(ticket.getTicketId().toString());
-        System.out.println(ticket.getShowId().toString());
-        System.out.println(ticket.getSeatId().toString());
-        System.out.println();
-        String res = Objects.requireNonNull(webClientBuilder.baseUrl("https://" + ticket.getCompany())
+    public void deleteTicket(Ticket ticket) {
+        webClientBuilder.baseUrl("https://" + ticket.getCompany())
                 .build()
                 .delete()
                 .uri(uriBuilder -> uriBuilder
@@ -243,8 +237,7 @@ public class TheatreService {
                 .onStatus(HttpStatus :: isError,
                         response -> Mono.error(new ServiceException("Error while trying to delete ticket with ID " + ticket.getTicketId().toString(),
                                 response.statusCode().value())))
-                .bodyToMono(String.class)
-                .block());
-        return res;
+                .bodyToMono(Ticket.class)
+                .block();
     }
 }
