@@ -84,7 +84,8 @@ public class PubSubHandler {
     }
 
     public TransportChannelProvider getChannelProvider() {
-        String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        //String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
+        String hostport = "localhost:8083";
         System.out.println("Hostport: " + hostport);
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         TransportChannelProvider channelProvider =

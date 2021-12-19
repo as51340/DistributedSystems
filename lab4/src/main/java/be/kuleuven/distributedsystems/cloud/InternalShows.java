@@ -180,22 +180,8 @@ public class InternalShows {
     return new Seat("internal", showId, seatId, time, type, name, price);
   }
 
-  public Ticket putTicket(Quote quote, String customer, Firestore db) {
-    Map<String, Object> ticketObject = new HashMap<>();
-    ticketObject.put("company", quote.getCompany());
-    ticketObject.put("showId", quote.getShowId().toString());
-    ticketObject.put("seatId", quote.getSeatId().toString());
-    ticketObject.put("customer", customer);
-    UUID ticketId = UUID.randomUUID();
-
-    db.collection("ds").document(customer).collection("tickets")
-        .document(ticketId.toString()).set(ticketObject);
-    return new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), ticketId, customer);
-  }
-
-  public void deleteTicket(Ticket ticket, Firestore db) {
-    db.collection("ds").document(ticket.getCustomer()).collection("tickets")
-        .document(ticket.getTicketId().toString()).delete();
+  public Ticket putTicket(Quote quote, String customer) {
+    return new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), UUID.randomUUID(), customer);
   }
 
   public void setUnavailable(List<Ticket> tickets, Firestore db) {

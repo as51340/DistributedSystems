@@ -196,7 +196,7 @@ public class Model {
     }
     return bestCustomers;
   }
-  // TODO Add check before booking if all of them are available and add runTransaction
+
   public void confirmQuotes(List<Quote> quotes, String customer) {
     int cnt = 0;
     List<Ticket> tickets = new ArrayList<>();
@@ -206,10 +206,9 @@ public class Model {
         try {
           Ticket currentTicket;
           if(!quote.getCompany().equals("internal"))
-            //TODO MAKE SURE TICKETS ARE AVAILABLE
             currentTicket = this.theatreService.putTicket(quote, customer);
           else
-            currentTicket = internalShows.putTicket(quote, customer, db);
+            currentTicket = internalShows.putTicket(quote, customer);
           reserved = true;
           tickets.add(currentTicket);
           break;
@@ -247,15 +246,34 @@ public class Model {
 
       // Saving to Firestore NoSQL DB
       Map<String ,Object> dummyMap= new HashMap<>();
-      DocumentReference df = db.collection("ds").document(customer);
-      df.set(dummyMap);  // add empty field, won't show in console
-      df.collection("bookings").add(convertedBooking);
 
-      //Set all booked seat availabilities to false
-      internalShows.setUnavailable(tickets, db);
+      //Assure that no two users can buy the same two tickets
+      ApiFuture<Void> futureTransaction = db.runTransaction(transaction -> {
+        boolean reservation = true;
+        for(Quote quote: quotes) {
+          ApiFuture<DocumentSnapshot> shows = db.collection("shows").document(quote.getShowId().toString())
+              .collection("seats").document(quote.getSeatId().toString()).get();
+          DocumentSnapshot documentSnapshot = shows.get();
+          if(Objects.equals(documentSnapshot.get("available"), "false"))
+            reservation = false;
+        }
 
-      String mailContent = this.getSuccessfulMailContent(tickets, customer);
-      sendGrid.sendEmail("Ticket reservation success", mailContent, customer);
+        if(reservation) {
+          DocumentReference users = db.collection("ds").document(customer);
+          users.set(dummyMap);  // add empty field, won't show in console
+          users.collection("bookings").add(convertedBooking);
+
+          //Set all booked seat availabilities to false
+          internalShows.setUnavailable(tickets, db);
+          sendGrid.sendEmail("Ticket reservation failure",
+              this.getUnSuccessfulMailContent(quotes, customer),
+              customer);
+        } else {
+          sendGrid.sendEmail("Ticket reservation success",
+              this.getSuccessfulMailContent(tickets, customer), customer);
+        }
+        return null;
+      });
     } else {
       System.err.println("Error happened while reserving seats, deleting old tickets. Cnt: " + cnt);
       for(Ticket ticket: tickets) {
@@ -264,8 +282,6 @@ public class Model {
           try {
             if(!ticket.getCompany().equals("internal"))
               this.theatreService.deleteTicket(ticket);
-            else
-              internalShows.deleteTicket(ticket, db);
             System.out.println("Deleted ticket: " + ticket.getTicketId().toString());
             deleted = true;
             break;
@@ -300,7 +316,7 @@ public class Model {
     StringBuilder bodyBuilder = new StringBuilder()
             .append("<body>")
             .append(customerUsername).append(", </br>Your request for seats\n").append(seatsStr)
-            .append("couldn't be executed. Please try again or our website or contact us if problems continue.")
+            .append("couldn't be executed. Please try again on our website or contact us if problems continue.")
             .append("<br/><br/>")
             .append("Sincerely, DNet team(Daniel and Andi)")
             .append("</body>");
@@ -361,7 +377,8 @@ public class Model {
     StringBuilder bodyBuilder = new StringBuilder("<body>")
             .append("Dear ")
             .append(customerUsername).append(", <br/>Your request for seats\n").append(seatsStr)
-            .append("has been successfully processed. Below you can find summary of tickets bought:\r\n\r\n").append(ticketsStr)
+            .append("has been successfully processed. Below you can find the summary of your bought tickets:\r\n\r\n")
+            .append(ticketsStr)
             .append("<br/></br/>Sincerely, DNet team(Daniel and Andi)")
             .append("</body>");
 
