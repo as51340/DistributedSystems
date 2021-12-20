@@ -93,12 +93,6 @@ public class PubSubHandler {
         return channelProvider;
     }
 
-    /**
-     * Method for publishing messages
-     * @param topicId
-     * @throws IOException
-     * @throws InterruptedException
-     */
     public void publishWithErrorHandlerExample(String topicId, PubSubRequest message)
             throws IOException, InterruptedException {
         TopicName topicName = TopicName.of(projectId, topicId);
@@ -129,22 +123,24 @@ public class PubSubHandler {
             // Add an asynchronous callback to handle success / failure
             ApiFutures.addCallback(
                     future,
-                    new ApiFutureCallback<String>() {
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            if (throwable instanceof ApiException) {
-                                ApiException apiException = ((ApiException) throwable);
-                                // details on the API exception
-                                System.out.println("Publisher API Exception code: " + apiException.getStatusCode().getCode());
-                                System.out.println("Publisher API exception retryable: " + apiException.isRetryable());
-                            }
-                            System.out.println("Error publishing message for topic : " + topicName.getTopic());
-                        }
-                        @Override
-                        public void onSuccess(String messageId) {
-                            // Once published, returns server-assigned message ids (unique within the topic)
-                            System.out.println("Successfully published message with ID: " + messageId  + " for topic: " + topicName.getTopic());
-                        }},
+                new ApiFutureCallback<>() {
+                  @Override
+                  public void onFailure(Throwable throwable) {
+                    if (throwable instanceof ApiException) {
+                      ApiException apiException = ((ApiException) throwable);
+                      // details on the API exception
+                      System.out.println("Publisher API Exception code: " + apiException.getStatusCode().getCode());
+                      System.out.println("Publisher API exception retryable: " + apiException.isRetryable());
+                    }
+                    System.out.println("Error publishing message for topic : " + topicName.getTopic());
+                  }
+
+                  @Override
+                  public void onSuccess(String messageId) {
+                    // Once published, returns server-assigned message ids (unique within the topic)
+                    System.out.println("Successfully published message with ID: " + messageId + " for topic: " + topicName.getTopic());
+                  }
+                },
                     MoreExecutors.directExecutor());
 
         } finally {
@@ -156,12 +152,6 @@ public class PubSubHandler {
         }
     }
 
-    /**
-     * Creates push subscription
-     * @param subscriptionId
-     * @param topicId
-     * @throws IOException
-     */
     public void createPushSubscriptionExample(String subscriptionId, String topicId) throws IOException{
 
         SubscriptionAdminClient subscriptionAdminClient = null;
@@ -189,7 +179,7 @@ public class PubSubHandler {
             System.out.println("Created push subscription: " + subscription.getName() + " for topic " + topicName.getTopic() +
                     " push endpoint " + pushConfig.getPushEndpoint());
         } catch(Exception ex) {
-            System.out.println(ex.toString());
+            System.out.println(ex);
         }
     }
  }

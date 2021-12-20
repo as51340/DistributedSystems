@@ -4,13 +4,11 @@ import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
-import io.netty.handler.ssl.SslContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -159,13 +157,6 @@ public class TheatreService {
         return new ArrayList<>(seats);
     }
 
-    /**
-     * Returns ticket for given seat and show
-     * @param company
-     * @param showId
-     * @param seatId
-     * @return
-     */
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
         return Objects.requireNonNull(webClientBuilder.baseUrl("https://" + company)
                 .build()
@@ -187,12 +178,6 @@ public class TheatreService {
                 .block());
     }
 
-    /**
-     * Reserves seat and API returns ticket as result.
-     * @param quote
-     * @param customer
-     * @return
-     */
     public Ticket putTicket(Quote quote, String customer) {
         return Objects.requireNonNull(webClientBuilder.baseUrl("https://" + quote.getCompany())
                 .build()
@@ -215,11 +200,6 @@ public class TheatreService {
                 .block());
     }
 
-    /**
-     * Deletes ticket.
-     * @param ticket already created ticket
-     * @return
-     */
     public void deleteTicket(Ticket ticket) {
         webClientBuilder.baseUrl("https://" + ticket.getCompany())
                 .build()

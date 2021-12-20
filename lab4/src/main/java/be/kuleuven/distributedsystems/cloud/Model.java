@@ -130,7 +130,7 @@ public class Model {
   @SuppressWarnings("unchecked")
   public List<Booking> getBookings(String customer) throws ExecutionException, InterruptedException {
     List<Booking> bookings = new ArrayList<>();
-    ApiFuture<QuerySnapshot> query = db.collection("ds").document(customer).collection("bookings").get();
+    ApiFuture<QuerySnapshot> query = db.collection("user").document(customer).collection("bookings").get();
     QuerySnapshot querySnapshot = query.get();
     List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
     for (QueryDocumentSnapshot document : documents) {
@@ -161,7 +161,7 @@ public class Model {
 
   public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
     List<Booking> allBookings = new ArrayList<>();
-    ApiFuture<QuerySnapshot> query = db.collection("ds").get();
+    ApiFuture<QuerySnapshot> query = db.collection("user").get();
     QuerySnapshot querySnapshot = query.get();
     List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
     for (QueryDocumentSnapshot document : documents)
@@ -173,7 +173,7 @@ public class Model {
     Set<String> bestCustomers = new HashSet<>();
     int maxTickets = 0;
     List<Booking> costumerBookings;
-    ApiFuture<QuerySnapshot> query = db.collection("ds").get();
+    ApiFuture<QuerySnapshot> query = db.collection("user").get();
     QuerySnapshot querySnapshot = query.get();
     List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
 
@@ -248,7 +248,7 @@ public class Model {
       Map<String ,Object> dummyMap= new HashMap<>();
 
       //Assure that no two users can buy the same two tickets
-      ApiFuture<Void> futureTransaction = db.runTransaction(transaction -> {
+      db.runTransaction(transaction -> {
         boolean reservation = true;
         for(Quote quote: quotes) {
           ApiFuture<DocumentSnapshot> shows = db.collection("shows").document(quote.getShowId().toString())
@@ -259,7 +259,7 @@ public class Model {
         }
 
         if(reservation) {
-          DocumentReference users = db.collection("ds").document(customer);
+          DocumentReference users = db.collection("user").document(customer);
           users.set(dummyMap);  // add empty field, won't show in console
           users.collection("bookings").add(convertedBooking);
 
