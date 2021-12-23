@@ -265,12 +265,12 @@ public class Model {
 
           //Set all booked seat availabilities to false
           internalShows.setUnavailable(tickets, db);
+          sendGrid.sendEmail("Ticket reservation success",
+              this.getSuccessfulMailContent(tickets, customer), customer);
+        } else {
           sendGrid.sendEmail("Ticket reservation failure",
               this.getUnSuccessfulMailContent(quotes, customer),
               customer);
-        } else {
-          sendGrid.sendEmail("Ticket reservation success",
-              this.getSuccessfulMailContent(tickets, customer), customer);
         }
         return null;
       });

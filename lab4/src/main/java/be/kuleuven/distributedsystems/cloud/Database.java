@@ -11,27 +11,28 @@ public class Database {
     @Autowired
     private String projectId;
 
-    @Autowired
-    private boolean isProduction;
-
     public Firestore initDB() {
         FirestoreOptions firestoreOptions = null;
-        if(!isProduction) {
+
+        String env = System.getenv("GAE_ENV");
+
+        if(env != null && env.equals("standard")) {
+          try {
             firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
-                    .setProjectId(projectId)
-                    .setEmulatorHost("localhost:8084")
-                    .setCredentials(new FirestoreOptions.EmulatorCredentials())
-                    .build();
+                .setProjectId(projectId)
+                .setCredentials(GoogleCredentials.getApplicationDefault())
+                .build();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
         } else {
-            try {
-                firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
-                        .setProjectId(projectId)
-                        .setCredentials(GoogleCredentials.getApplicationDefault())
-                        .build();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+          firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+              .setProjectId(projectId)
+              .setEmulatorHost("localhost:8084")
+              .setCredentials(new FirestoreOptions.EmulatorCredentials())
+              .build();
         }
+
       assert firestoreOptions != null;
       return firestoreOptions.getService();
     }
