@@ -6,6 +6,7 @@ import be.kuleuven.distributedsystems.cloud.services.ServiceException;
 import be.kuleuven.distributedsystems.cloud.services.TheatreService;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,9 @@ import java.util.concurrent.ExecutionException;
 
 @Component
 public class Model {
+
+  @Autowired
+  private boolean isProduction;
 
   // Theatre service for fetching stuff
   private final TheatreService theatreService;
@@ -265,9 +269,11 @@ public class Model {
 
           //Set all booked seat availabilities to false
           internalShows.setUnavailable(tickets, db);
-          sendGrid.sendEmail("Ticket reservation success",
-              this.getSuccessfulMailContent(tickets, customer), customer);
-        } else {
+          if(isProduction) {
+            sendGrid.sendEmail("Ticket reservation success",
+                    this.getSuccessfulMailContent(tickets, customer), customer);
+          }
+        } else if(isProduction) {
           sendGrid.sendEmail("Ticket reservation failure",
               this.getUnSuccessfulMailContent(quotes, customer),
               customer);
@@ -293,9 +299,11 @@ public class Model {
           System.out.println("Failed to delete old ticket, further action needed...");
         }
       }
-      sendGrid.sendEmail("Ticket reservation failure",
-              this.getUnSuccessfulMailContent(quotes, customer),
-              customer);
+      if(isProduction) {
+        sendGrid.sendEmail("Ticket reservation failure",
+                this.getUnSuccessfulMailContent(quotes, customer),
+                customer);
+      }
     }
   }
 
