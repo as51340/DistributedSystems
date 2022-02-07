@@ -1,6 +1,7 @@
 package be.kuleuven.distributedsystems.cloud.jsondata;
 
 public class SeatDTO {
+
   private String name;
   private String price;
   private String time;
@@ -37,6 +38,5 @@ public class SeatDTO {
   public void setType(String type) {
     this.type = type;
   }
-
 
 }

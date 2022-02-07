@@ -15,7 +15,7 @@ import com.google.cloud.pubsub.v1.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.Gson;
-import com.google.protobuf.ByteString;
+import com.google.protobuf.ByteString; // immutable sequence of bytes
 import com.google.pubsub.v1.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -87,9 +87,7 @@ public class PubSubHandler {
         String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
         System.out.println("Hostport: " + hostport);
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
-        TransportChannelProvider channelProvider =
-                FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-        return channelProvider;
+        return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
     }
 
     public void publishWithErrorHandlerExample(String topicId, PubSubRequest message)
@@ -104,6 +102,7 @@ public class PubSubHandler {
                 publisher = Publisher.newBuilder(topicName).build();
             }
 
+            // Data and attributes must not be empty at the same time
             PubsubMessage pubsubMessage = null;
             if(message == null) {
                 pubsubMessage = PubsubMessage.newBuilder().putAllAttributes(

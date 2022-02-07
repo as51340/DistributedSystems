@@ -1,7 +1,6 @@
 package be.kuleuven.distributedsystems.cloud.controller;
 
 import be.kuleuven.distributedsystems.cloud.Model;
-import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.pubsub.requests.ConfirmQuotesRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -43,9 +42,10 @@ public class PubSubController {
         }
         ConfirmQuotesRequest confirmQuotesRequest = this.getData(jsonRoot);
 
-        for(String messageId: this.messageIDs) {
-            System.out.print(messageId + " ");
-        }
+        // for(String messageId: this.messageIDs) {
+        //     System.out.print(messageId + " ");
+        // }
+
         System.out.println();
         this.model.confirmQuotes(confirmQuotesRequest.getQuotes(), confirmQuotesRequest.getCustomer());
         return new ResponseEntity<>(HttpStatus.OK);

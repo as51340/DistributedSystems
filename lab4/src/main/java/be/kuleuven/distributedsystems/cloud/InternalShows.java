@@ -8,10 +8,7 @@ import be.kuleuven.distributedsystems.cloud.jsondata.SeatDTO;
 import be.kuleuven.distributedsystems.cloud.jsondata.ShowDTO;
 import be.kuleuven.distributedsystems.cloud.entities.Ticket;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.*;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -32,7 +29,10 @@ import java.util.concurrent.ExecutionException;
 public class InternalShows {
 
   public void initInternalShows(Firestore db){
-    ApiFuture<QuerySnapshot> query = db.collection("shows").get();
+    ApiFuture<QuerySnapshot> query = db.collection("shows").get();  // somehow reference to the query
+    // QuerySnapshot contains zero or more DocumentSnapshot objects representing the results of a query
+    // Can be accesses via the docs property or enumerated using forEach
+    // Current version of database
     QuerySnapshot querySnapshot = null;
     try {
       querySnapshot = query.get();
@@ -65,6 +65,8 @@ public class InternalShows {
         String showID = UUID.randomUUID().toString();
 
         db.collection("shows").document(showID).set(showObject);
+        // Every show is represented by a document with showID
+        // And every show has a subcollection of seats where each seat is annotated by seatID
 
         for (SeatDTO seat : show.getSeats()) {
           Map<String, Object> seatObject = new HashMap<>();
@@ -82,6 +84,8 @@ public class InternalShows {
   }
 
   public List<Show> dbJsonToPojo(Firestore db) {
+    // Fetch all shows from database
+    // Iterate over all documents and for every document found create new class Show and it to list<Show>
     List<Show> shows = new ArrayList<>();
     ApiFuture<QuerySnapshot> query = db.collection("shows").get();
     QuerySnapshot querySnapshot = null;
@@ -104,7 +108,20 @@ public class InternalShows {
     return shows;
   }
 
+  // ASK IF THIS IS MORE EFFICIENT, IT SHOULD BE
+  public Show fetchShow(UUID uuid, Firestore db) throws ExecutionException, InterruptedException {
+    DocumentReference docRef = db.collection("shows").document(uuid.toString());
+    ApiFuture<DocumentSnapshot> future = docRef.get();
+
+    DocumentSnapshot document = future.get();
+    String name = document.getString("name");
+    String location = document.getString("location");
+    String image = document.getString("image");
+    return new Show("internal", uuid, name, location, image);
+  }
+
   public Show getShow(UUID uuid, Firestore db) {
+    // Not most efficient, you can just break after you found
     List<Show> shows = dbJsonToPojo(db);
     Show showToReturn = null;
     for(Show show : shows) {
@@ -118,6 +135,8 @@ public class InternalShows {
     Set<LocalDateTime> timesSet = new HashSet<>();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
     ApiFuture<QuerySnapshot> query = db.collection("shows").document(showId.toString()).collection("seats").get();
+    // Here it would be better to store all times for a show instead of looping over all seats
+    // Storage vs time tradeoff
     QuerySnapshot querySnapshot = null;
     try {
       querySnapshot = query.get();
@@ -133,10 +152,12 @@ public class InternalShows {
   }
 
   public List<Seat> getAvailableSeats(UUID showId, LocalDateTime time, Firestore db) {
+    // It would be better to just filter everything in the application code .whereEqualTo("available", true)
     List<Seat> availableSeats = new ArrayList<>();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
     String formattedDateTime = time.format(formatter);
     ApiFuture<QuerySnapshot> query = db.collection("shows").document(showId.toString()).collection("seats").get();
+            //.whereEqualTo("available", true).whereEqualTo("time", formattedDateTime).get();
     QuerySnapshot querySnapshot = null;
     try {
       querySnapshot = query.get();
@@ -179,6 +200,8 @@ public class InternalShows {
     return new Ticket(quote.getCompany(), quote.getShowId(), quote.getSeatId(), UUID.randomUUID(), customer);
   }
 
+
+  // This looks OK
   public void setUnavailable(List<Ticket> tickets, Firestore db) {
     for(Ticket t : tickets)
       db.collection("shows").document(t.getShowId().toString()).collection("seats")

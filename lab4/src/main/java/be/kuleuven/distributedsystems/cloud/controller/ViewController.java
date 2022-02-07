@@ -7,6 +7,8 @@ import be.kuleuven.distributedsystems.cloud.entities.Show;
 import be.kuleuven.distributedsystems.cloud.pubsub.PubSubHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -169,6 +171,10 @@ public class ViewController {
     @GetMapping("/manager")
     public ModelAndView viewManager(
             @CookieValue(value = "cart", required = false) String cartString) throws Exception {
+
+        // SecurityContextHolder.getContext().getAuthentication().getPrincipal() or getDetails()
+
+        // How to save role of user, not in token?
 
         List<Quote> quotes = Cart.fromCookie(cartString);
         ModelAndView modelAndView = new ModelAndView("manager");

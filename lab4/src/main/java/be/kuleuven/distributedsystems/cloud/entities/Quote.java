@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * A temporary allocation of one seat. The quote is held by one specific customer, but contains no
  * reference to that customer. A quote is a volatile object, i.e., it is not persisted and has no unique
- * identifier. A quote will evolve into an ticket during the booking process.
+ * identifier. A quote will evolve into a ticket during the booking process.
  */
 public class Quote implements Serializable {
 

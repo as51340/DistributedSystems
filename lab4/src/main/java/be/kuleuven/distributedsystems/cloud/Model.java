@@ -153,6 +153,7 @@ public class Model {
             ticketList.add(t);
           }
         }
+      // Break when you found ticket property
       // Extract all other booking data
       UUID uuid = UUID.fromString(Objects.requireNonNull(document.getString("UUID")));
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
@@ -164,6 +165,8 @@ public class Model {
   }
 
   public List<Booking> getAllBookings() throws ExecutionException, InterruptedException {
+    // So this iterates over all users in db collection "user"
+    // and then for each user calls getBookings
     List<Booking> allBookings = new ArrayList<>();
     ApiFuture<QuerySnapshot> query = db.collection("user").get();
     QuerySnapshot querySnapshot = query.get();
@@ -251,23 +254,36 @@ public class Model {
       // Saving to Firestore NoSQL DB
       Map<String ,Object> dummyMap= new HashMap<>();
 
-      //Assure that no two users can buy the same two tickets
+      // Assure that no two users can buy the same two tickets
+      // First read and then write operations in theory
+      // If there is concurrent edit that affects document
       db.runTransaction(transaction -> {
         boolean reservation = true;
+        // All-or-nothing semantics - fails one fail all
         for(Quote quote: quotes) {
           ApiFuture<DocumentSnapshot> shows = db.collection("shows").document(quote.getShowId().toString())
-              .collection("seats").document(quote.getSeatId().toString()).get();
+                  .collection("seats").document(quote.getSeatId().toString()).get(); // first fetch
           DocumentSnapshot documentSnapshot = shows.get();
-          if(Objects.equals(documentSnapshot.get("available"), "false"))
+          if (Objects.equals(documentSnapshot.get("available"), "false")){
             reservation = false;
+            break;
+          }
         }
+
+        // First fetch shows
+        // Then fetch show timed for corresponding show
+        // After that all available seats for that show
+
+        // Check if seats are available once more in the transaction
 
         if(reservation) {
           DocumentReference users = db.collection("user").document(customer);
+          // WHY THIS DUMMY MAP? Because you cannot fetch user if you don't have fields
+          // Grey and italics - you cannot see them from java if you make query
           users.set(dummyMap);  // add empty field, won't show in console
           users.collection("bookings").add(convertedBooking);
 
-          //Set all booked seat availabilities to false
+          // Set all booked seat availabilities to false
           internalShows.setUnavailable(tickets, db);
           if(isProduction) {
             sendGrid.sendEmail("Ticket reservation success",

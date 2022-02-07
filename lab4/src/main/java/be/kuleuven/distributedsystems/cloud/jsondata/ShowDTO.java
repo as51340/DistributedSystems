@@ -4,6 +4,9 @@ import be.kuleuven.distributedsystems.cloud.jsondata.SeatDTO;
 
 import java.util.List;
 
+/**
+ * Corresponds to one show
+ */
 public class ShowDTO {
   private String name;
   private String location;
